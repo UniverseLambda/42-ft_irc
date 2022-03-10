@@ -54,9 +54,12 @@ namespace data {
 		UserMode getMode() const;
 		bool isOperator() const;
 
-		bool channelDestroyed(ChannelPtr channel);
+		bool channelJoined(ChannelPtr channel);
+		bool kickedFromChannel(ChannelPtr channel);
 
 		bool sendMessage(internal::Message message);
+
+		void dispatchDisconnect();
 	};
 
 	User::UserMode operator|(User::UserMode um0, User::UserMode um1);

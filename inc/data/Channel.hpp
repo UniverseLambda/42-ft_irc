@@ -8,6 +8,7 @@
 
 #include "Forward.hpp"
 
+#include <internal/Forward.hpp>
 #include <internal/Message.hpp>
 
 namespace data {
@@ -33,12 +34,13 @@ namespace data {
 		typedef std::map<UserPtr, bool> user_storage;
 
 		std::string mName;
+		internal::ServerPtr mServer;
 		user_storage mUsers;
 		ChannelMode mMode;
 
 	public:
 		Channel();
-		Channel(std::string name);
+		Channel(std::string name, internal::ServerPtr server);
 		Channel(const Channel &orig);
 		~Channel();
 
@@ -56,6 +58,8 @@ namespace data {
 		void userDisconnected(UserPtr user);
 
 		bool sendMessage(UserPtr sender, internal::Message message);
+
+		bool kickUser(UserPtr kicked);
 	};
 
 	Channel::ChannelMode operator|(Channel::ChannelMode cm0, Channel::ChannelMode cm1);

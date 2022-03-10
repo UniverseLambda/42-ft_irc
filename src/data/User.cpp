@@ -5,9 +5,7 @@
 #include <internal/IComm.hpp>
 
 namespace data {
-	User::User(): mFd(-1), mServer(NULL), mAuthenticated(false), mMode(UMODE_NONE) {
-
-	}
+	User::User(): mFd(-1), mServer(NULL), mAuthenticated(false), mMode(UMODE_NONE) {}
 
 	User::User(int fd, internal::ServerPtr server): mFd(fd), mServer(server), mAuthenticated(false), mMode(UMODE_NONE) {}
 
@@ -84,13 +82,23 @@ namespace data {
 		return !!(mMode & UMODE_OPERATOR);
 	}
 
-	bool User::channelDestroyed(ChannelPtr channel) {
+	bool User::channelJoined(ChannelPtr channel) {
+		return mChannels.insert(channel).second;
+	}
+
+	bool User::kickedFromChannel(ChannelPtr channel) {
 		return mChannels.erase(channel) != 0;
 	}
 
 	bool User::sendMessage(internal::Message message) {
 		message.trySetChannel(mNickname);
 		return mServer->getCommInterface()->sendMessage(mFd, message);
+	}
+
+	void User::dispatchDisconnect() {
+		for (std::set<ChannelPtr>::iterator it = mChannels.begin(); it != mChannels.end(); ++it) {
+			(*it)->userDisconnected(this);
+		}
 	}
 
 	User::UserMode operator|(User::UserMode um0, User::UserMode um1) {

@@ -26,6 +26,7 @@ namespace internal {
 		data::UserPtr addUser(int fd);
 		bool removeUser(int fd);
 
+		std::string getPassword() const;
 		data::UserPtr getUser(int fd) const;
 		data::ChannelPtr getChannel(std::string name) const;
 
@@ -34,5 +35,9 @@ namespace internal {
 		bool admitMessage(int fd, std::string command, std::vector<std::string> params = std::vector<std::string>());
 
 		ICommPtr getCommInterface() const;
+
+		void channelReclaiming(std::string name);
+
+		bool userDisconnected(int fd);
 	};
 } // namespace internal

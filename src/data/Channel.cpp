@@ -2,21 +2,24 @@
 #include <data/User.hpp>
 
 namespace data {
-	Channel::Channel(std::string name): mName(name), mMode(CMODE_NONE) {}
+	Channel::Channel():
+		mServer(NULL),
+		mMode(CMODE_NONE) {}
+
+	Channel::Channel(std::string name, internal::ServerPtr server):
+		mName(name), mServer(server), mMode(CMODE_NONE) {}
 
 	Channel::Channel(const Channel &orig):
 		mName(orig.mName),
+		mServer(orig.mServer),
 		mUsers(orig.mUsers),
 		mMode(orig.mMode) {}
 
-	Channel::~Channel() {
-		for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-			it->first->channelDestroyed(this);
-		}
-	}
+	Channel::~Channel() {}
 
 	Channel &Channel::operator=(const Channel &orig) {
 		mName = orig.mName;
+		mServer = orig.mServer;
 		mUsers = orig.mUsers;
 		return *this;
 	}
@@ -35,7 +38,11 @@ namespace data {
 
 	bool Channel::userJoin(UserPtr user) {
 		try {
-			return mUsers.insert(std::make_pair(user, mUsers.empty())).second;
+			if (!mUsers.insert(std::make_pair(user, mUsers.empty())).second) {
+				return false;
+			}
+
+			return user->channelJoined(this);
 		} catch (...) {}
 		return false;
 	}
@@ -73,6 +80,10 @@ namespace data {
 		}
 
 		return true;
+	}
+
+	bool Channel::kickUser(UserPtr kicked) {
+		return !!(mUsers.erase(kicked)) && kicked->kickedFromChannel(this);
 	}
 
 	Channel::ChannelMode operator|(Channel::ChannelMode cm0, Channel::ChannelMode cm1) {

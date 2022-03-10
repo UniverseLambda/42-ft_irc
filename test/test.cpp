@@ -9,15 +9,25 @@
 #include <map>
 #include <vector>
 
+#include <csignal>
+#include <execinfo.h>
+#include <unistd.h>
+
+#ifdef __linux__
+#include <cstdlib>
+#endif
+
 #define EXEC_TEST(X) { std::cout << "[*] EXECUTING " #X "..." << std::endl; if (!X()) return 1; }
 
 #define test_assert_equal(V, X) if (!((V) == (X))) fail_test(__FILE__, __LINE__, __FUNCTION__, "failed assertion")
+#define test_assert_not_equal(V, X) if ((V) == (X)) fail_test(__FILE__, __LINE__, __FUNCTION__, "failed assertion")
+#define test_assert_true(V) if (!(V)) fail_test(__FILE__, __LINE__, __FUNCTION__, "failed assertion")
 #define test_expect_exception(V, X) try { V; fail_test(__FILE__, __LINE__, __FUNCTION__, "exception expected"); } \
 									catch (X &e) {(void)e;} \
 									catch (...) { fail_test(__FILE__, __LINE__, __FUNCTION__, "wrong exception caught"); }
 
 #define test_prelude std::string _test_file, _test_function; int _test_line;
-#define test_unexpected_exception fail_test(_test_file, _test_line, _test_function, "Caught an exception")
+#define test_unexpected_exception fail_test(_test_file, _test_line, _test_function, "Caught an exception");
 #define new_op { _test_file = __FILE__; _test_line = __LINE__; _test_function = __FUNCTION__; }
 
 struct MessageReceiver: internal::IComm {
@@ -48,11 +58,22 @@ void fail_test(std::string file, int line, std::string function, std::string rea
 	std::abort();
 }
 
+void handle_sigs(int sig) {
+	void *array[20];
+
+	std::size_t size = backtrace(array, 20);
+	std::cerr << "/!\\ Caught signal: " << sig << std::endl;
+	backtrace_symbols_fd(array, size, STDERR_FILENO);
+	std::exit(sig + 128);
+}
+
 bool test_user() {
 	test_prelude
 
 	try {
-		data::User user;
+		MessageReceiver receiver;
+		internal::Server server("", &receiver);
+		data::User user(-1, &server);
 
 		// Testing default values
 		new_op test_assert_equal(user.getNickname().empty(), true);
@@ -88,9 +109,9 @@ bool test_user() {
 		new_op test_assert_equal(user.getRealname(), "LoL2");
 
 		new_op user.setAuthenticated(true);
-		new_op test_assert_equal(user.getAuthenticated(), true);
+		new_op test_assert_true(user.getAuthenticated());
 		new_op user.setAuthenticated(true);
-		new_op test_assert_equal(user.getAuthenticated(), true);
+		new_op test_assert_true(user.getAuthenticated());
 		new_op user.setAuthenticated(false);
 		new_op test_assert_equal(user.getAuthenticated(), false);
 
@@ -99,8 +120,26 @@ bool test_user() {
 		new_op user.setMode(data::User::UMODE_INVISIBLE, false);
 		new_op test_assert_equal(user.getMode(), data::User::UMODE_OPERATOR);
 
-		new_op test_assert_equal(user.channelDestroyed(NULL), false);
-		new_op test_assert_equal(user.channelDestroyed(reinterpret_cast<data::ChannelPtr>(0xDEADBEAF)), false);
+		new_op test_assert_equal(user.kickedFromChannel(NULL), false);
+		new_op test_assert_equal(user.kickedFromChannel(reinterpret_cast<data::ChannelPtr>(0xDEADBEAF)), false);
+
+		// Message test
+		{
+			new_op std::string msgOrigin = "mdr", msgContent = "MY BIG MESSAGE";
+			new_op internal::Message msg(msgOrigin, msgContent);
+
+			new_op test_assert_true(user.sendMessage(msg));
+			new_op test_assert_true(receiver.hasMessage(-1));
+
+
+			new_op test_assert_true(receiver.hasMessage(-1));
+
+			new_op internal::Message result = receiver.getLastMessage(-1);
+
+			new_op test_assert_equal(result.getOrigin(), msgOrigin);
+			new_op test_assert_equal(result.getMessage(), msgContent);
+			new_op test_assert_equal(result.getChannel(), user.getNickname());
+		}
 	} catch (...) { test_unexpected_exception; }
 
 	return true;
@@ -110,14 +149,16 @@ bool test_channel() {
 	test_prelude
 
 	try {
-		const std::string name = "#nicechannel";
-		data::Channel channel(name);
 		MessageReceiver receiver;
-		internal::Server fakeServer("", &receiver);
-		internal::ServerPtr server = &fakeServer;
-		data::User fakeUser(-1, server);
+		internal::Server server("", &receiver);
+
+		const std::string name = "#nicechannel";
+		data::Channel channel(name, &server);
+
+		data::User fakeUser(-1, &server);
 		data::UserPtr user = &fakeUser;
-		data::User otherFakeUser(-2, server);
+
+		data::User otherFakeUser(-2, &server);
 		data::UserPtr otherUser = &otherFakeUser;
 
 		// Testing default values
@@ -144,7 +185,7 @@ bool test_channel() {
 		new_op test_assert_equal(channel.isOperator(user), true);
 		new_op channel.setOperator(user, false);
 		new_op test_assert_equal(channel.isOperator(user), false);
-		new_op channel.userDisconnected(user);
+		new_op channel.kickUser(user);
 		new_op test_expect_exception(channel.isOperator(user), std::out_of_range);
 
 		// Testing message
@@ -166,7 +207,7 @@ bool test_channel() {
 			std::string message = "MSG 2 OUF RESURRECTION";
 
 			new_op test_assert_equal(channel.sendMessage(otherUser, internal::Message(orig, message)), true);
-			new_op test_assert_equal(receiver.hasMessage(-1), true);
+			new_op test_assert_true(receiver.hasMessage(-1));
 			new_op test_assert_equal(receiver.hasMessage(-2), false);
 
 			new_op internal::Message msg = receiver.getLastMessage(-1);
@@ -176,7 +217,70 @@ bool test_channel() {
 			new_op test_assert_equal(msg.getMessage(), message);
 			new_op test_assert_equal(msg.getChannel(), channel.getName());
 		}
-	} catch (...) { test_unexpected_exception; }
+	} catch (...) { test_unexpected_exception }
+	return true;
+}
+
+bool test_server() {
+	test_prelude
+
+	try {
+		MessageReceiver receiver;
+		internal::Server server("PSSWD", &receiver);
+
+		std::string channelName = "#channel";
+		data::ChannelPtr channel = NULL;
+
+		data::UserPtr user0, user1;
+
+		new_op test_assert_equal(server.getPassword(), "PSSWD");
+		new_op test_assert_equal(server.getUser(-1), NULL);
+		new_op test_assert_equal(server.getUser(0xDEADBEEF), NULL);
+		new_op test_assert_equal(server.getCommInterface(), &receiver);
+		new_op test_assert_equal(server.getChannel("MDR"), NULL);
+		new_op test_assert_equal(server.getChannel(""), NULL);
+		new_op test_assert_not_equal(channel = server.getOrCreateChannel(channelName), NULL);
+		new_op test_assert_equal(server.getOrCreateChannel(channelName), channel);
+
+		new_op server.channelReclaiming(channelName);
+		new_op delete channel;
+
+		{
+			new_op data::ChannelPtr fake = new data::Channel();
+			new_op data::ChannelPtr new_channel = NULL;
+
+			new_op test_assert_equal(server.getChannel(channelName), NULL);
+			new_op test_assert_not_equal(new_channel = server.getOrCreateChannel(channelName), NULL);
+			new_op test_assert_not_equal(new_channel, channel);
+			new_op channel = new_channel;
+
+			new_op delete fake;
+		}
+
+		new_op user0 = server.addUser(-1);
+		new_op test_expect_exception(server.addUser(-1), std::runtime_error);
+		new_op test_assert_equal(server.getUser(-1), user0);
+
+		new_op user1 = server.addUser(-2);
+		new_op test_expect_exception(server.addUser(-1), std::runtime_error);
+		new_op test_expect_exception(server.addUser(-2), std::runtime_error);
+		new_op test_assert_equal(server.getUser(-2), user1);
+		new_op test_assert_not_equal(server.getUser(-2), user0);
+
+		new_op test_assert_true(channel->userJoin(user0));
+		new_op test_assert_true(channel->userJoin(user1));
+
+		new_op test_assert_equal(server.userDisconnected(-3), false);
+		new_op test_assert_equal(server.userDisconnected(0xDEADBEEF), false);
+		new_op test_assert_equal(server.userDisconnected(-2), true);
+
+		new_op test_assert_equal(server.getUser(-2), NULL);
+		new_op test_expect_exception(channel->isOperator(user1), std::out_of_range);
+		new_op test_assert_equal(channel->sendMessage(user0, internal::Message("SCH", "Clement >>>>> all")), true);
+		new_op test_assert_equal(server.userDisconnected(-1), true);
+		new_op test_assert_equal(server.getUser(-1), NULL);
+		new_op test_assert_equal(server.getUser(-2), NULL);
+	} catch (...) { test_unexpected_exception }
 	return true;
 }
 
@@ -184,8 +288,11 @@ int main(int argc, char *argv[]) {
 	(void)argc;
 	(void)argv;
 
+	std::signal(SIGSEGV, handle_sigs);
+
 	EXEC_TEST(test_user)
 	EXEC_TEST(test_channel)
+	EXEC_TEST(test_server)
 
 	return 0;
 }

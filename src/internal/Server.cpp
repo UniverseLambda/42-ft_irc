@@ -49,6 +49,10 @@ namespace internal {
 		return mUsers.erase(fd) != 0;
 	}
 
+	std::string Server::getPassword() const {
+		return mPassword;
+	}
+
 	data::UserPtr Server::getUser(int fd) const {
 		try {
 			return mUsers.at(fd);
@@ -71,7 +75,7 @@ namespace internal {
 			data::ChannelPtr chan = getChannel(name);
 
 			if (chan == NULL) {
-				chan = new data::Channel(name);
+				chan = new data::Channel(name, this);
 				mChannels.insert(std::make_pair(name, chan));
 			}
 
@@ -89,5 +93,23 @@ namespace internal {
 
 	ICommPtr Server::getCommInterface() const {
 		return mCommInterface;
+	}
+
+	void Server::channelReclaiming(std::string name) {
+		mChannels.erase(name);
+	}
+
+	bool Server::userDisconnected(int fd) {
+		std::map<int, data::UserPtr>::iterator user = mUsers.find(fd);
+
+		if (user == mUsers.end()) {
+			return false;
+		}
+
+		user->second->dispatchDisconnect();
+		mUsers.erase(user);
+		delete user->second;
+
+		return true;
 	}
 } // namespace internal
