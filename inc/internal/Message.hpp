@@ -17,6 +17,7 @@ namespace internal {
 
 	public:
 		Message(std::string origin, std::string message);
+		Message(std::string origin, std::string message, std::string channel);
 		Message(const Message &orig);
 		~Message();
 

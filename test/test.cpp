@@ -1,8 +1,9 @@
 #include <internal/Server.hpp>
 #include <internal/Message.hpp>
-#include <internal/IComm.hpp>
 #include <data/User.hpp>
 #include <data/Channel.hpp>
+
+#include <api/IComm.hpp>
 
 #include <iostream>
 #include <utility>
@@ -30,12 +31,22 @@
 #define test_unexpected_exception fail_test(_test_file, _test_line, _test_function, "Caught an exception");
 #define new_op { _test_file = __FILE__; _test_line = __LINE__; _test_function = __FUNCTION__; }
 
-struct MessageReceiver: internal::IComm {
+struct MessageReceiver: api::IComm {
 	typedef internal::Message Message;
 
 	std::map< int, std::vector<Message> > msgs;
 
-	virtual bool sendMessage(int fd, Message message) {
+	virtual bool sendMessage(int fd, std::string command, std::vector<std::string> params, bool) {
+		std::cout << command << std::endl;
+		if (command != "PRIVMSG" && command != "NOTICE") {
+			return false;
+		}
+
+		msgs[fd].push_back(Message("??", params.at(1), params.at(0)));
+		return true;
+	}
+
+	bool sendMessage(int fd, Message message) {
 		msgs[fd].push_back(message);
 		return true;
 	}

@@ -8,7 +8,7 @@
 namespace internal {
 	Server::Server() {}
 
-	Server::Server(std::string password, ICommPtr comm): mPassword(password), mCommInterface(comm) {}
+	Server::Server(std::string password, api::IComm *comm): mPassword(password), mCommInterface(comm) {}
 
 	Server::Server(const Server &orig):
 		mPassword(orig.mPassword),
@@ -91,7 +91,7 @@ namespace internal {
 		return false;
 	}
 
-	ICommPtr Server::getCommInterface() const {
+	api::IComm *Server::getCommInterface() const {
 		return mCommInterface;
 	}
 

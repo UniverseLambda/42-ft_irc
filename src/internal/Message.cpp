@@ -5,6 +5,11 @@ namespace internal {
 		mOrigin(origin),
 		mMessage(message) {}
 
+	Message::Message(std::string origin, std::string message, std::string channel):
+		mOrigin(origin),
+		mMessage(message),
+		mChannel(channel) {}
+
 	Message::Message(const Message &orig):
 		mOrigin(orig.mOrigin),
 		mMessage(orig.mMessage),

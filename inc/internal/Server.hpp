@@ -3,6 +3,8 @@
 #include <internal/Forward.hpp>
 #include <data/Forward.hpp>
 
+#include <api/IComm.hpp>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -11,13 +13,13 @@ namespace internal {
 	class Server {
 	private:
 		std::string mPassword;
-		ICommPtr mCommInterface;
+		api::IComm *mCommInterface;
 		std::map<int, data::UserPtr> mUsers;
 		std::map<std::string, data::ChannelPtr> mChannels;
 
 	public:
 		Server();
-		Server(std::string password, ICommPtr comm);
+		Server(std::string password, api::IComm *comm);
 		Server(const Server &orig);
 		~Server();
 
@@ -34,7 +36,7 @@ namespace internal {
 
 		bool admitMessage(int fd, std::string command, std::vector<std::string> params = std::vector<std::string>());
 
-		ICommPtr getCommInterface() const;
+		api::IComm *getCommInterface() const;
 
 		void channelReclaiming(std::string name);
 

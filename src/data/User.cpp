@@ -1,8 +1,11 @@
 #include <data/User.hpp>
 #include <data/Channel.hpp>
 
+#include <api/IComm.hpp>
+
 #include <internal/Server.hpp>
-#include <internal/IComm.hpp>
+
+#include <util/Util.hpp>
 
 namespace data {
 	User::User(): mFd(-1), mServer(NULL), mAuthenticated(false), mMode(UMODE_NONE) {}
@@ -92,7 +95,7 @@ namespace data {
 
 	bool User::sendMessage(internal::Message message) {
 		message.trySetChannel(mNickname);
-		return mServer->getCommInterface()->sendMessage(mFd, message);
+		return mServer->getCommInterface()->sendMessage(mFd, "PRIVMSG", util::makeVector(message.getChannel(), message.getMessage()), true);
 	}
 
 	void User::dispatchDisconnect() {

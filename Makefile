@@ -8,6 +8,7 @@ TEST_SRCS := test/test.cpp
 
 SRCS =
 
+include src/api/Include.mk
 include src/internal/Include.mk
 include src/data/Include.mk
 
