@@ -51,5 +51,9 @@ namespace util {
 		operator bool() const {
 			return mIsValid;
 		}
+
+		bool operator==(const Optional &other) const {
+			return (mIsValid == other.mIsValid) && (!mIsValid || (mValue == other.mValue));
+		}
 	};
 } // namespace util

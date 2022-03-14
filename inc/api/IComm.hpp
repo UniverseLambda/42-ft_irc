@@ -4,11 +4,13 @@
 
 #include <string>
 #include <vector>
+#include <util/Optional.hpp>
+#include <internal/Origin.hpp>
 
 namespace api {
 	struct IComm {
 		FT_INTERFACE_PRELUDE(IComm);
 
-		virtual bool sendMessage(int fd, std::string command, std::vector<std::string> parameters = std::vector<std::string>(), bool lastParamExtended = false) = 0;
+		virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters = std::vector<std::string>(), bool lastParamExtended = false) = 0;
 	};
 } // namespace api

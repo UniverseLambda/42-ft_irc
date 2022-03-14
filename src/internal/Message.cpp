@@ -1,11 +1,11 @@
 #include <internal/Message.hpp>
 
 namespace internal {
-	Message::Message(std::string origin, std::string message):
+	Message::Message(Origin origin, std::string message):
 		mOrigin(origin),
 		mMessage(message) {}
 
-	Message::Message(std::string origin, std::string message, std::string channel):
+	Message::Message(Origin origin, std::string message, std::string channel):
 		mOrigin(origin),
 		mMessage(message),
 		mChannel(channel) {}
@@ -25,7 +25,7 @@ namespace internal {
 		return (*this);
 	}
 
-	std::string Message::getOrigin() const {
+	Origin Message::getOrigin() const {
 		return mOrigin;
 	}
 
@@ -52,6 +52,6 @@ namespace internal {
 	}
 
 	std::ostream &operator<<(std::ostream &os, const Message &message) {
-		return (os << message.getOrigin() << "~" << message.getChannel() << ":" << message.getMessage());
+		return (os << message.getOrigin().toString() << " " << message.getChannel() << ":" << message.getMessage());
 	}
 } // namespace internal

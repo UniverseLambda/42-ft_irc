@@ -36,13 +36,12 @@ struct MessageReceiver: api::IComm {
 
 	std::map< int, std::vector<Message> > msgs;
 
-	virtual bool sendMessage(int fd, std::string command, std::vector<std::string> params, bool) {
-		std::cout << command << std::endl;
+	virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool) {
 		if (command != "PRIVMSG" && command != "NOTICE") {
 			return false;
 		}
 
-		msgs[fd].push_back(Message("??", params.at(1), params.at(0)));
+		msgs[fd].push_back(Message(prefix.unwrap(), params.at(1), params.at(0)));
 		return true;
 	}
 
@@ -136,7 +135,8 @@ bool test_user() {
 
 		// Message test
 		{
-			new_op std::string msgOrigin = "mdr", msgContent = "MY BIG MESSAGE";
+			new_op internal::Origin msgOrigin("mdr");
+			new_op std::string msgContent = "MY BIG MESSAGE";
 			new_op internal::Message msg(msgOrigin, msgContent);
 
 			new_op test_assert_true(user.sendMessage(msg));
@@ -202,19 +202,19 @@ bool test_channel() {
 		// Testing message
 
 		/// No-one's here
-		new_op test_assert_equal(channel.sendMessage(user, internal::Message("AdMiN", "MSG 2 OUF")), false);
+		new_op test_assert_equal(channel.sendMessage(user, internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF")), false);
 		new_op test_assert_equal(channel.userJoin(user), true);
 
-		new_op test_assert_equal(channel.sendMessage(user, internal::Message("AdMiN", "MSG 2 OUF")), true);
+		new_op test_assert_equal(channel.sendMessage(user, internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF")), true);
 		new_op test_assert_equal(receiver.hasMessage(-1), false);
 
-		new_op test_assert_equal(channel.sendMessage(otherUser, internal::Message("AdMiN", "MSG 2 OUF")), false);
-		new_op test_assert_equal(channel.sendMessage(reinterpret_cast<data::UserPtr>(0xDEADBEEF), internal::Message("AdMiN", "MSG 2 OUF")), false);
+		new_op test_assert_equal(channel.sendMessage(otherUser, internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF")), false);
+		new_op test_assert_equal(channel.sendMessage(reinterpret_cast<data::UserPtr>(0xDEADBEEF), internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF")), false);
 
 		new_op test_assert_equal(channel.userJoin(otherUser), true);
 
 		{
-			std::string orig = "AdMiN (maybe)";
+			internal::Origin orig("AdMiN (maybe)");
 			std::string message = "MSG 2 OUF RESURRECTION";
 
 			new_op test_assert_equal(channel.sendMessage(otherUser, internal::Message(orig, message)), true);
@@ -287,7 +287,7 @@ bool test_server() {
 
 		new_op test_assert_equal(server.getUser(-2), NULL);
 		new_op test_expect_exception(channel->isOperator(user1), std::out_of_range);
-		new_op test_assert_equal(channel->sendMessage(user0, internal::Message("SCH", "Clement >>>>> all")), true);
+		new_op test_assert_equal(channel->sendMessage(user0, internal::Message(internal::Origin("SCH"), "Clement >>>>> all")), true);
 		new_op test_assert_equal(server.userDisconnected(-1), true);
 		new_op test_assert_equal(server.getUser(-1), NULL);
 		new_op test_assert_equal(server.getUser(-2), NULL);

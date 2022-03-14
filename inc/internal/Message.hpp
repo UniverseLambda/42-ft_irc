@@ -2,6 +2,7 @@
 
 #include <data/Forward.hpp>
 #include <iostream>
+#include <internal/Origin.hpp>
 
 #include <string>
 
@@ -11,19 +12,19 @@
 namespace internal {
 	class Message {
 	private:
-		std::string mOrigin;
+		Origin mOrigin;
 		std::string mMessage;
 		std::string mChannel;
 
 	public:
-		Message(std::string origin, std::string message);
-		Message(std::string origin, std::string message, std::string channel);
+		Message(Origin origin, std::string message);
+		Message(Origin origin, std::string message, std::string channel);
 		Message(const Message &orig);
 		~Message();
 
 		Message &operator=(const Message &orig);
 
-		std::string getOrigin() const;
+		Origin getOrigin() const;
 		std::string getMessage() const;
 		std::string getChannel() const;
 
