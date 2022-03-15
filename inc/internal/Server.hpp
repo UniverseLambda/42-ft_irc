@@ -34,12 +34,17 @@ namespace internal {
 
 		data::ChannelPtr getOrCreateChannel(std::string name);
 
-		bool admitMessage(int fd, std::string command, std::vector<std::string> params = std::vector<std::string>());
-
 		api::IComm *getCommInterface() const;
 
 		void channelReclaiming(std::string name);
 
 		bool userDisconnected(int fd);
+
+		bool admitMessage(int fd, std::string command, std::vector<std::string> params = std::vector<std::string>());
+
+	private:
+
+		bool requiresParam(int fd, std::string command, std::vector<std::string> params, std::size_t count);
+		bool sendError(int fd, std::string errorCode, std::vector<std::string> params) const;
 	};
 } // namespace internal

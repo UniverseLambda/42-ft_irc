@@ -39,6 +39,10 @@ namespace data {
 		return *this;
 	}
 
+	void User::setSentPassword(const std::string &password) {
+		mSentPassword = password;
+	}
+
 	void User::setNickname(const std::string &nickname) {
 		mNickname = nickname;
 	}
@@ -65,6 +69,10 @@ namespace data {
 		} else {
 			mMode = mMode & (~mode);
 		}
+	}
+
+	std::string User::getSentPassword() const {
+		return mSentPassword;
 	}
 
 	std::string User::getNickname() const {

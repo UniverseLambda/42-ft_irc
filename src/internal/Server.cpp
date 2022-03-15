@@ -2,6 +2,8 @@
 #include <data/User.hpp>
 #include <data/Channel.hpp>
 
+#include <util/Util.hpp>
+
 #include <iostream>
 #include <stdexcept>
 
@@ -84,13 +86,6 @@ namespace internal {
 		return NULL;
 	}
 
-	bool Server::admitMessage(int fd, std::string command, std::vector<std::string> params) {
-		(void)fd;
-		(void)command;
-		(void)params;
-		return false;
-	}
-
 	api::IComm *Server::getCommInterface() const {
 		return mCommInterface;
 	}
@@ -113,5 +108,39 @@ namespace internal {
 		delete ptr;
 
 		return true;
+	}
+
+	bool Server::admitMessage(int fd, std::string command, std::vector<std::string> params) {
+		data::UserPtr user = getUser(fd);
+		api::IComm *commAPI = getCommInterface();
+
+		if (!user) {
+			return false;
+		}
+
+		if (command == "PASS") {
+			if (!requiresParam(fd, command, params, 1))
+				return true;
+
+			if (user->getAuthenticated()) {
+				return sendError(fd, "462", util::makeVector<std::string>("You may not reregister"));
+			}
+
+			user->setSentPassword(params[0]);
+		}
+
+		return false;
+	}
+
+	bool Server::requiresParam(int fd, std::string command, std::vector<std::string> params, std::size_t count) {
+		if (params.size() < count) {
+			sendError(fd, "461", util::makeVector<std::string>(command, "Not enough parameters"));
+			return false;
+		}
+		return true;
+	}
+
+	bool Server::sendError(int fd, std::string errorCode, std::vector<std::string> params) const {
+		return getCommInterface()->sendMessage(fd, util::Optional<Origin>(), errorCode, params, true);
 	}
 } // namespace internal

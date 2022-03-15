@@ -24,6 +24,8 @@ namespace data {
 		int mFd;
 		internal::ServerPtr mServer;
 
+		std::string mSentPassword;
+
 		std::string mNickname;
 		std::string mUsername;
 		std::string mRealname;
@@ -42,6 +44,7 @@ namespace data {
 
 		User &operator=(const User &rhs);
 
+		void setSentPassword(const std::string &password);
 		void setNickname(const std::string &nickname);
 		void setUsername(const std::string &username);
 		void setRealname(const std::string &realname);
@@ -49,6 +52,7 @@ namespace data {
 		void setAuthenticated(bool auth);
 		void setMode(UserMode mode, bool addMode);
 
+		std::string getSentPassword() const;
 		std::string getNickname() const;
 		std::string getUsername() const;
 		std::string getRealname() const;
