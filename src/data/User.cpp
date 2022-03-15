@@ -18,6 +18,7 @@ namespace data {
 		mNickname(copy.mNickname),
 		mUsername(copy.mUsername),
 		mRealname(copy.mRealname),
+		mHostname(copy.mHostname),
 		mAuthenticated(copy.mAuthenticated),
 		mMode(copy.mMode) {
 
@@ -31,6 +32,7 @@ namespace data {
 		mNickname = rhs.mNickname;
 		mUsername = rhs.mUsername;
 		mRealname = rhs.mRealname;
+		mHostname = rhs.mHostname;
 		mAuthenticated = rhs.mAuthenticated;
 		mMode = rhs.mMode;
 
@@ -47,6 +49,10 @@ namespace data {
 
 	void User::setRealname(const std::string &realname) {
 		mRealname = realname;
+	}
+
+	void User::setHostname(const std::string &hostname) {
+		mHostname = hostname;
 	}
 
 	void User::setAuthenticated(bool authenticated) {
@@ -71,6 +77,10 @@ namespace data {
 
 	std::string User::getRealname() const {
 		return mRealname;
+	}
+
+	std::string User::getHostname() const {
+		return mHostname;
 	}
 
 	bool User::getAuthenticated() const {

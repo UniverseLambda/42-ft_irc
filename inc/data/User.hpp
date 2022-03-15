@@ -27,6 +27,7 @@ namespace data {
 		std::string mNickname;
 		std::string mUsername;
 		std::string mRealname;
+		std::string mHostname;
 		bool mAuthenticated;
 
 		UserMode mMode;
@@ -44,12 +45,14 @@ namespace data {
 		void setNickname(const std::string &nickname);
 		void setUsername(const std::string &username);
 		void setRealname(const std::string &realname);
+		void setHostname(const std::string &hostname);
 		void setAuthenticated(bool auth);
 		void setMode(UserMode mode, bool addMode);
 
 		std::string getNickname() const;
 		std::string getUsername() const;
 		std::string getRealname() const;
+		std::string getHostname() const;
 		bool getAuthenticated() const;
 		UserMode getMode() const;
 		bool isOperator() const;

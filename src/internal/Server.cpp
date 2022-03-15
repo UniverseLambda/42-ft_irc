@@ -106,9 +106,11 @@ namespace internal {
 			return false;
 		}
 
-		user->second->dispatchDisconnect();
+		data::UserPtr ptr = user->second;
+
+		ptr->dispatchDisconnect();
 		mUsers.erase(user);
-		delete user->second;
+		delete ptr;
 
 		return true;
 	}

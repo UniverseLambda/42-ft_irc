@@ -22,8 +22,8 @@ LD := $(CXX)
 RM := rm
 MKDIR := mkdir
 
-CXX_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -Iinc #-fsanitize=address -fsanitize=undefined
-LD_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -fsanitize=undefined
+CXX_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -Iinc -fsanitize=address #-fsanitize=undefined
+LD_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -fsanitize=address #-fsanitize=undefined
 
 OBJS :=	$(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 

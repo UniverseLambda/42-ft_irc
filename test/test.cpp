@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
 	(void)argc;
 	(void)argv;
 
-	std::signal(SIGSEGV, handle_sigs);
+	// std::signal(SIGSEGV, handle_sigs);
 
 	EXEC_TEST(test_user)
 	EXEC_TEST(test_channel)
