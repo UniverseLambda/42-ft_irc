@@ -52,12 +52,13 @@ namespace data {
 		void setAuthenticated(bool auth);
 		void setMode(UserMode mode, bool addMode);
 
+		int getFd() const;
 		std::string getSentPassword() const;
 		std::string getNickname() const;
 		std::string getUsername() const;
 		std::string getRealname() const;
 		std::string getHostname() const;
-		bool getAuthenticated() const;
+		bool isAuthenticated() const;
 		UserMode getMode() const;
 		bool isOperator() const;
 

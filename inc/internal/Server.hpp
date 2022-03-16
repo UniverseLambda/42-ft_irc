@@ -12,9 +12,11 @@
 namespace internal {
 	class Server {
 	private:
+		typedef std::map<int, data::UserPtr> userStorage;
+
 		std::string mPassword;
 		api::IComm *mCommInterface;
-		std::map<int, data::UserPtr> mUsers;
+		userStorage mUsers;
 		std::map<std::string, data::ChannelPtr> mChannels;
 
 	public:
@@ -46,5 +48,11 @@ namespace internal {
 
 		bool requiresParam(int fd, std::string command, std::vector<std::string> params, std::size_t count);
 		bool sendError(int fd, std::string errorCode, std::vector<std::string> params) const;
+
+		bool tryToAuthenticate(data::UserPtr user);
+
+		bool handleLUsers(int fd) const;
+
+		static bool checkNickname(const std::string &nick);
 	};
 } // namespace internal

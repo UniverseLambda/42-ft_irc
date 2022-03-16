@@ -89,7 +89,7 @@ bool test_user() {
 		new_op test_assert_equal(user.getNickname().empty(), true);
 		new_op test_assert_equal(user.getUsername().empty(), true);
 		new_op test_assert_equal(user.getRealname().empty(), true);
-		new_op test_assert_equal(user.getAuthenticated(), false);
+		new_op test_assert_equal(user.isAuthenticated(), false);
 		new_op test_assert_equal(user.isOperator(), false);
 		new_op test_assert_equal(user.getMode(), data::User::UMODE_NONE);
 
@@ -119,11 +119,11 @@ bool test_user() {
 		new_op test_assert_equal(user.getRealname(), "LoL2");
 
 		new_op user.setAuthenticated(true);
-		new_op test_assert_true(user.getAuthenticated());
+		new_op test_assert_true(user.isAuthenticated());
 		new_op user.setAuthenticated(true);
-		new_op test_assert_true(user.getAuthenticated());
+		new_op test_assert_true(user.isAuthenticated());
 		new_op user.setAuthenticated(false);
-		new_op test_assert_equal(user.getAuthenticated(), false);
+		new_op test_assert_equal(user.isAuthenticated(), false);
 
 		new_op user.setMode(data::User::UMODE_INVISIBLE | data::User::UMODE_OPERATOR, true);
 		new_op test_assert_equal(user.getMode(), data::User::UMODE_INVISIBLE | data::User::UMODE_OPERATOR);

@@ -71,6 +71,10 @@ namespace data {
 		}
 	}
 
+	int User::getFd() const {
+		return mFd;
+	}
+
 	std::string User::getSentPassword() const {
 		return mSentPassword;
 	}
@@ -91,7 +95,7 @@ namespace data {
 		return mHostname;
 	}
 
-	bool User::getAuthenticated() const {
+	bool User::isAuthenticated() const {
 		return mAuthenticated;
 	}
 

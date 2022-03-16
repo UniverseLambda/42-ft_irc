@@ -15,3 +15,5 @@ PRIVMSG
 NOTICE
 
 PONG (ignore on receiving)
+
+LUSERS ? (it has responses, but no description. WTF IS WRONG WITH YOU RFC 1459)
