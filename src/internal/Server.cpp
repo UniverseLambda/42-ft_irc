@@ -40,12 +40,15 @@ namespace internal {
 	}
 
 	data::UserPtr Server::addUser(int fd) {
-		data::UserPtr user = new data::User(fd, this);
+		std::pair<internal::Server::userStorage::iterator, bool> result = mUsers.insert(std::make_pair<int, data::UserPtr>(fd, NULL));
 
-		if (!mUsers.insert(std::make_pair(fd, user)).second) {
+		if (!result.second) {
 			std::cerr << "Woops! Duplicate fd: " << fd << std::endl;
 			throw std::runtime_error("Woops. Duplicate fd");
 		}
+
+		data::UserPtr user = new data::User(fd, this);
+		result.first->second = user;
 
 		return user;
 	}
