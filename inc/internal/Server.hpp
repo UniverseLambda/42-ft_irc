@@ -41,6 +41,7 @@ namespace internal {
 		void channelReclaiming(std::string name);
 
 		bool userDisconnected(int fd);
+		void userDisconnected(data::UserPtr user, std::string message = "Disconnected");
 
 		bool admitMessage(int fd, std::string command, std::vector<std::string> params = std::vector<std::string>());
 

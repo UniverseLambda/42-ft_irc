@@ -1,5 +1,8 @@
 #include <data/Channel.hpp>
 #include <data/User.hpp>
+#include <internal/Server.hpp>
+
+#include <util/Util.hpp>
 
 namespace data {
 	Channel::Channel():
@@ -42,7 +45,17 @@ namespace data {
 				return false;
 			}
 
-			return user->channelJoined(this);
+			if (!user->channelJoined(this)) {
+				return false;
+			}
+
+			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+				mServer->getCommInterface()->sendMessage(user->getFd(), internal::Origin(user->getNickname(), user->getUsername(), user->getHostname()), "JOIN", util::makeVector(mName), true);
+
+				util::sendNumericReply(mServer->getCommInterface(), user, "353", util::makeVector(user->getNickname()));
+			}
+
+			return util::sendNumericReply(mServer->getCommInterface(), user, "366", util::makeVector<std::string>("End of /NAMES list"));
 		} catch (...) {}
 		return false;
 	}

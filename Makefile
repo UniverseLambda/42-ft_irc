@@ -11,6 +11,7 @@ SRCS =
 include src/api/Include.mk
 include src/internal/Include.mk
 include src/data/Include.mk
+include src/util/Include.mk
 
 INCS :=
 

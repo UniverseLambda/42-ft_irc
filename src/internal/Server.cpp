@@ -107,13 +107,21 @@ namespace internal {
 			return false;
 		}
 
-		data::UserPtr ptr = user->second;
-
-		ptr->dispatchDisconnect();
-		mUsers.erase(user);
-		delete ptr;
-
+		userDisconnected(user->second);
 		return true;
+	}
+
+	void Server::userDisconnected(data::UserPtr user, std::string message) {
+		user->dispatchDisconnect();
+		mUsers.erase(user->getFd());
+
+		for (userStorage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+			// We don't care if we couldn't manage to send the message
+
+			mCommInterface->sendMessage(it->second->getFd(), Origin(user->getNickname()), "QUIT", util::makeVector(message), true);
+		}
+
+		delete user;
 	}
 
 	bool Server::admitMessage(int fd, std::string command, std::vector<std::string> params) {
@@ -173,7 +181,30 @@ namespace internal {
 			return sendError(fd, "451", util::makeVector<std::string>("You have not registered"));
 		}
 
-		return false;
+		if (command == "QUIT") {
+			if (params.empty()) {
+				userDisconnected(user);
+			} else {
+				userDisconnected(user, params[0]);
+			}
+		} else if (command == "JOIN") {
+			if (!requiresParam(user->getFd(), "JOIN", params, 1))
+				return true;
+
+			std::vector<std::string> channels = util::parseList(params[0]);
+
+			for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); ++it) {
+				data::ChannelPtr channel = getOrCreateChannel(*it);
+
+				if (channel->userJoin(user)) {
+					channel->sendMessage(user, Message(user->getNickname(), "Joined the channel"));
+				}
+			}
+
+		}
+
+
+		return true;
 	}
 
 	bool Server::requiresParam(int fd, std::string command, std::vector<std::string> params, std::size_t count) {

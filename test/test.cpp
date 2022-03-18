@@ -38,7 +38,7 @@ struct MessageReceiver: api::IComm {
 
 	virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool) {
 		if (command != "PRIVMSG" && command != "NOTICE") {
-			return false;
+			return true;
 		}
 
 		msgs[fd].push_back(Message(prefix.unwrap(), params.at(1), params.at(0)));

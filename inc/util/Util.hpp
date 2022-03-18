@@ -1,5 +1,11 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
+#include <api/IComm.hpp>
+#include <data/User.hpp>
+
 namespace util {
 	template<typename _Tp>
 	std::vector<_Tp> makeVector() {
@@ -60,4 +66,8 @@ namespace util {
 
 		return vec;
 	}
+
+	std::vector<std::string> parseList(std::string list);
+
+	bool sendNumericReply(api::IComm *comm, data::UserPtr user, std::string code, std::vector<std::string> params);
 } // namespace util
