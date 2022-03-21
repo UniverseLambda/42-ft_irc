@@ -28,7 +28,10 @@ namespace data {
 			CMODE_BAN							= 0x100,	// b
 			CMODE_SPEAK_ON_MODERATED_CHANNEL	= 0x200,	// v
 			CMODE_PASSWORD						= 0x400,	// k
+			CMODE_END							= 0x800
 		};
+
+		typedef ChannelMode Mode;
 
 	private:
 		typedef std::map<UserPtr, bool> user_storage;
@@ -53,6 +56,9 @@ namespace data {
 
 		bool setMode(ChannelMode mode, bool addMode);
 		ChannelMode getMode() const;
+		std::string getModeString() const;
+
+		static char getModeChar(ChannelMode mode);
 
 		bool userJoin(UserPtr user);
 		void userDisconnected(UserPtr user);

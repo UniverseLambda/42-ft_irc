@@ -4,6 +4,8 @@
 
 #include <util/Util.hpp>
 
+#include <sstream>
+
 namespace data {
 	Channel::Channel():
 		mServer(NULL),
@@ -77,6 +79,35 @@ namespace data {
 
 	Channel::ChannelMode Channel::getMode() const {
 		return mMode;
+	}
+
+	std::string Channel::getModeString() const {
+		std::ostringstream os;
+
+		int v = 0x001;
+
+		for (int i = 0; i != CMODE_END; i <<= 1) {
+			os << getModeChar(static_cast<ChannelMode>(v));
+		}
+
+		return os.str();
+	}
+
+	char Channel::getModeChar(ChannelMode mode) {
+		switch (mode) {
+			case CMODE_OPERATOR:					return 'o';
+			case CMODE_PRIVATE:						return 'p';
+			case CMODE_SECRET:						return 's';
+			case CMODE_INVITE:						return 'i';
+			case CMODE_TOPIC_OP_ONLY:				return 't';
+			case CMODE_NO_OUTSIDE_CLIENT:			return 'n';
+			case CMODE_MODERATED:					return 'm';
+			case CMODE_LIMIT:						return 'l';
+			case CMODE_BAN:							return 'b';
+			case CMODE_SPEAK_ON_MODERATED_CHANNEL:	return 'v';
+			case CMODE_PASSWORD:					return 'k';
+			default:								return '\0';
+		}
 	}
 
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {

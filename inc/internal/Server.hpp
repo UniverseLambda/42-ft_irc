@@ -54,6 +54,8 @@ namespace internal {
 
 		bool handleLUsers(int fd) const;
 
+		bool handleMode(data::UserPtr user, std::vector<std::string> params);
+
 		static bool checkNickname(const std::string &nick);
 	};
 } // namespace internal

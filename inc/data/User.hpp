@@ -20,6 +20,8 @@ namespace data {
 			UMODE_OPERATOR						= 0x08,
 		};
 
+		typedef UserMode Mode;
+
 	private:
 		int mFd;
 		internal::ServerPtr mServer;

@@ -200,7 +200,11 @@ namespace internal {
 					channel->sendMessage(user, Message(user->getNickname(), "Joined the channel"));
 				}
 			}
+		} else if (command == "MODE") {
+			if (!requiresParam(fd, command, params, 2))
+				return true;
 
+			return handleMode(user, params);
 		}
 
 
@@ -282,6 +286,18 @@ namespace internal {
 			&& (luserChannels.empty() || sendError(fd, "254", util::makeVector<std::string>(luserChannels)))
 			&& sendError(fd, "255", util::makeVector<std::string>(luserClient))
 		;
+	}
+
+	bool Server::handleMode(data::UserPtr user, std::vector<std::string> params) {
+		(void)user;
+
+		if (params[0][0] == '&' || params[0][0] == '#') {
+			// Channel
+
+		} else {
+			// User
+		}
+		return true;
 	}
 
 	bool Server::checkNickname(const std::string &nick) {
