@@ -14,11 +14,19 @@ namespace util {
 	}
 
 	bool sendNumericReply(api::IComm *comm, data::UserPtr user, std::string code, std::string param) {
-		return comm->sendMessage(user->getFd(), internal::Origin(internal::Server::getHost()), code, makeVector(param), true);
+		return sendNumericReply(comm, internal::Origin(internal::Server::getHost()), user, code, param);
 	}
 
 	bool sendNumericReply(api::IComm *comm, data::UserPtr user, std::string code, std::vector<std::string> params) {
+		return sendNumericReply(comm, internal::Origin(internal::Server::getHost()), user, code, params);
+	}
+
+	bool sendNumericReply(api::IComm *comm, internal::Origin origin, data::UserPtr user, std::string code, std::string param) {
+		return sendNumericReply(comm, origin, user, code, makeVector(param));
+	}
+
+	bool sendNumericReply(api::IComm *comm, internal::Origin origin, data::UserPtr user, std::string code, std::vector<std::string> params) {
 		params.insert(params.begin(), user->getNickname());
-		return comm->sendMessage(user->getFd(), internal::Origin(internal::Server::getHost()), code, params, true);
+		return comm->sendMessage(user->getFd(), origin, code, params, true);
 	}
 } // namespace util

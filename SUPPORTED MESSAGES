@@ -6,6 +6,7 @@ QUIT		UNTESTED
 JOIN		UNTESTED
 PART		UNTESTED
 MODE		*WIP*
+WHO
 TOPIC
 NAMES
 INVITE
@@ -14,6 +15,7 @@ KICK
 PRIVMSG
 NOTICE
 
-PONG (ignore on receiving)
+PING/PONG
 
 LUSERS ? (it has responses, but no description. WTF IS WRONG WITH YOU RFC 1459)
+CAP ? Dunno if it's important, seems to work by just ignoring it

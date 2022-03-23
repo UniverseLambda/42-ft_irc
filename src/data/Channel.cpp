@@ -54,10 +54,17 @@ namespace data {
 			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
 				mServer->getCommInterface()->sendMessage(user->getFd(), internal::Origin(user->getNickname(), user->getUsername(), user->getHostname()), "JOIN", util::makeVector(mName), true);
 
-				util::sendNumericReply(mServer->getCommInterface(), user, "353", util::makeVector(user->getNickname()));
+				util::sendNumericReply(mServer->getCommInterface(),
+					user,
+					"353",
+					util::makeVector<std::string>(
+						(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" : "=",
+						mName,
+						(it->second ? "@" : "") + user->getNickname()
+				));
 			}
 
-			return util::sendNumericReply(mServer->getCommInterface(), user, "366", util::makeVector<std::string>("End of /NAMES list"));
+			return util::sendNumericReply(mServer->getCommInterface(), user, "366", "End of NAMES list");
 		} catch (...) {}
 		return false;
 	}
