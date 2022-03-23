@@ -1,6 +1,8 @@
 #include <data/User.hpp>
 #include <data/Channel.hpp>
 
+#include <sstream>
+
 #include <api/IComm.hpp>
 
 #include <internal/Server.hpp>
@@ -101,6 +103,39 @@ namespace data {
 
 	User::UserMode User::getMode() const {
 		return mMode;
+	}
+
+
+	std::string User::getModeString() const {
+		std::ostringstream os;
+
+		int v = 0x001;
+
+		for (int i = 0; i != UMODE_END; i <<= 1) {
+			os << getModeChar(static_cast<UserMode>(v));
+		}
+
+		return os.str();
+	}
+
+	char User::getModeChar(User::UserMode mode) {
+		switch (mode) {
+			case UMODE_INVISIBLE:					return 'i';
+			case UMODE_NOTICE_RECEIPT:				return 's';
+			case UMODE_WALLOPS_RECEIVER:			return 'w';
+			case UMODE_OPERATOR:					return 'o';
+			default:								return '\0';
+		}
+	}
+
+	User::UserMode User::getMode(char c) {
+		switch (c) {
+			case 'i':			return UMODE_INVISIBLE;
+			case 's':			return UMODE_NOTICE_RECEIPT;
+			case 'w':			return UMODE_WALLOPS_RECEIVER;
+			case 'o':			return UMODE_OPERATOR;
+		}
+		return UMODE_NONE;
 	}
 
 	bool User::isOperator() const {

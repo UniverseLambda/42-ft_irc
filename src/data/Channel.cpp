@@ -110,6 +110,23 @@ namespace data {
 		}
 	}
 
+	Channel::ChannelMode Channel::getMode(char c) {
+		switch (c) {
+			case 'o':			return CMODE_OPERATOR;
+			case 'p':			return CMODE_PRIVATE;
+			case 's':			return CMODE_SECRET;
+			case 'i':			return CMODE_INVITE;
+			case 't':			return CMODE_TOPIC_OP_ONLY;
+			case 'n':			return CMODE_NO_OUTSIDE_CLIENT;
+			case 'm':			return CMODE_MODERATED;
+			case 'l':			return CMODE_LIMIT;
+			case 'b':			return CMODE_BAN;
+			case 'v':			return CMODE_SPEAK_ON_MODERATED_CHANNEL;
+			case 'k':			return CMODE_PASSWORD;
+		}
+		return CMODE_NONE;
+	}
+
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {
 		if (mUsers.count(sender) == 0) {
 			return false;

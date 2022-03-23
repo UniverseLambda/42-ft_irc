@@ -59,6 +59,7 @@ namespace data {
 		std::string getModeString() const;
 
 		static char getModeChar(ChannelMode mode);
+		static ChannelMode getMode(char c);
 
 		bool userJoin(UserPtr user);
 		void userDisconnected(UserPtr user);

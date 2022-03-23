@@ -9,6 +9,7 @@ TEST_SRCS := test/test.cpp
 SRCS =
 
 include src/api/Include.mk
+include src/emma/Include.mk
 include src/internal/Include.mk
 include src/data/Include.mk
 include src/util/Include.mk
@@ -23,8 +24,8 @@ LD := $(CXX)
 RM := rm
 MKDIR := mkdir
 
-CXX_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -Iinc -fsanitize=address #-fsanitize=undefined
-LD_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -fsanitize=address #-fsanitize=undefined
+CXX_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -Iinc #-fsanitize=address #-fsanitize=undefined
+LD_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 #-fsanitize=address #-fsanitize=undefined
 
 OBJS :=	$(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 

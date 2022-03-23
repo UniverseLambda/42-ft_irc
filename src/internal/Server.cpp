@@ -291,11 +291,10 @@ namespace internal {
 	bool Server::handleMode(data::UserPtr user, std::vector<std::string> params) {
 		(void)user;
 
-		if (params[0][0] == '&' || params[0][0] == '#') {
-			// Channel
-
-		} else {
+		if (params[0][0] != '&' && params[0][0] != '#') {
 			// User
+		} else {
+			// Channel
 		}
 		return true;
 	}

@@ -18,6 +18,7 @@ namespace data {
 			UMODE_NOTICE_RECEIPT				= 0x02,
 			UMODE_WALLOPS_RECEIVER				= 0x04,
 			UMODE_OPERATOR						= 0x08,
+			UMODE_END							= 0x10,
 		};
 
 		typedef UserMode Mode;
@@ -62,6 +63,9 @@ namespace data {
 		std::string getHostname() const;
 		bool isAuthenticated() const;
 		UserMode getMode() const;
+		std::string getModeString() const;
+		static char getModeChar(UserMode mode);
+		static UserMode getMode(char c);
 		bool isOperator() const;
 
 		bool channelJoined(ChannelPtr channel);

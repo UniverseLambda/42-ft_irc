@@ -5,6 +5,8 @@
 
 #include <api/IComm.hpp>
 
+#include <util/Util.hpp>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -55,6 +57,16 @@ namespace internal {
 		bool handleLUsers(int fd) const;
 
 		bool handleMode(data::UserPtr user, std::vector<std::string> params);
+
+		template<typename _Tp>
+		void genericHandleMode(data::UserPtr user, _Tp *target, std::vector<std::string> params) {
+			// typedef typename _Tp::Mode Mode;
+
+			if (params.size() == 1) {
+				util::sendNumericReply(getCommInterface(), user, "221", util::makeVector("+" + target->getModeString()));
+				return;
+			}
+		}
 
 		static bool checkNickname(const std::string &nick);
 	};
