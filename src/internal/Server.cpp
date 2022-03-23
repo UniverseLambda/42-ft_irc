@@ -57,6 +57,10 @@ namespace internal {
 		return mUsers.erase(fd) != 0;
 	}
 
+	std::string Server::getHost() {
+		return "irfun.fr";
+	}
+
 	std::string Server::getPassword() const {
 		return mPassword;
 	}
@@ -133,11 +137,11 @@ namespace internal {
 		}
 
 		if (command == "PASS") {
-			if (!requiresParam(fd, command, params, 1))
+			if (!requiresParam(user, command, params, 1))
 				return true;
 
 			if (user->isAuthenticated()) {
-				return sendError(fd, "462", util::makeVector<std::string>("You may not reregister"));
+				return sendNumericReply(user, "462", "You may not reregister");
 			}
 
 			user->setSentPassword(params[0]);
@@ -145,29 +149,29 @@ namespace internal {
 			return true;
 		} else if (command == "NICK") {
 			if (params.empty()) {
-				return sendError(fd, "431", util::makeVector<std::string>("No nickname given"));
+				return sendNumericReply(user, "431", "No nickname given");
 			}
 
 			std::string &nick = params[0];
 
 			if (!checkNickname(nick)) {
-				return sendError(fd, "432", util::makeVector<std::string>("Erroneus nickname"));
+				return sendNumericReply(user, "432", "Erroneus nickname");
 			}
 
 			for (userStorage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
 				if (it->second->getNickname() == nick) {
-					return sendError(fd, "433", util::makeVector<std::string>(nick, "Nickname is already in use"));
+					return sendNumericReply(user, "433", util::makeVector<std::string>(nick, "Nickname is already in use"));
 				}
 			}
 
 			user->setNickname(nick);
 			return tryToAuthenticate(user);
 		} else if (command == "USER") {
-			if (!requiresParam(fd, command, params, 4))
+			if (!requiresParam(user, command, params, 4))
 				return true;
 
 			if (user->isAuthenticated()) {
-				return sendError(fd, "462", util::makeVector<std::string>("You may not reregister"));
+				return sendNumericReply(user, "462", "You may not reregister");
 			}
 
 			user->setUsername(params[0]);
@@ -178,7 +182,7 @@ namespace internal {
 		}
 
 		if (!user->isAuthenticated()) {
-			return sendError(fd, "451", util::makeVector<std::string>("You have not registered"));
+			return sendNumericReply(user, "451", "You have not registered");
 		}
 
 		if (command == "QUIT") {
@@ -188,7 +192,7 @@ namespace internal {
 				userDisconnected(user, params[0]);
 			}
 		} else if (command == "JOIN") {
-			if (!requiresParam(user->getFd(), "JOIN", params, 1))
+			if (!requiresParam(user, "JOIN", params, 1))
 				return true;
 
 			std::vector<std::string> channels = util::parseList(params[0]);
@@ -201,26 +205,29 @@ namespace internal {
 				}
 			}
 		} else if (command == "MODE") {
-			if (!requiresParam(fd, command, params, 2))
+			if (!requiresParam(user, command, params, 2))
 				return true;
 
 			return handleMode(user, params);
 		}
 
-
 		return true;
 	}
 
-	bool Server::requiresParam(int fd, std::string command, std::vector<std::string> params, std::size_t count) {
+	bool Server::requiresParam(data::UserPtr user, std::string command, std::vector<std::string> params, std::size_t count) {
 		if (params.size() < count) {
-			sendError(fd, "461", util::makeVector<std::string>(command, "Not enough parameters"));
+			sendNumericReply(user, "461", util::makeVector<std::string>(command, "Not enough parameters"));
 			return false;
 		}
 		return true;
 	}
 
-	bool Server::sendError(int fd, std::string errorCode, std::vector<std::string> params) const {
-		return getCommInterface()->sendMessage(fd, util::Optional<Origin>(), errorCode, params, true);
+	bool Server::sendNumericReply(data::UserPtr user, std::string code, std::string param) const {
+		return util::sendNumericReply(getCommInterface(), user, code, param);
+	}
+
+	bool Server::sendNumericReply(data::UserPtr user, std::string code, std::vector<std::string> params) const {
+		return util::sendNumericReply(getCommInterface(), user, code, params);
 	}
 
 	bool Server::tryToAuthenticate(data::UserPtr user) {
@@ -233,27 +240,33 @@ namespace internal {
 		}
 
 		if (user->getSentPassword() != getPassword()) {
-			return sendError(user->getFd(), "464", util::makeVector<std::string>("Password incorrect"));
+			return util::sendNumericReply(mCommInterface, user, "464", "Password incorrect");
 		}
 
 		user->setAuthenticated(true);
 
+		// 001 RPL_WELCOME
+		sendNumericReply(user, "001", "Welcome to the Internet Relay Network " + user->getUsername() + "!" + user->getUsername() + "@" + user->getHostname());
+
+		// 002 RPL_YOURHOST
+		sendNumericReply(user, "002", "Your host is " + getHost() + ", running version irfun-1.0");
+
+		// 003 RPL_CREATED
+		sendNumericReply(user, "003", "This server was created Thu Mar 24 2022 12:37 (CET)");
+
+		// 004 RPL_MYINFO
+		sendNumericReply(user, "004", util::makeVector<std::string>(getHost(), "irfun-1.0", "iswo", "opstinmlbvk"));
+
+		// RPL_LUSER
+		handleLUsers(user);
+
 		// MOTD (or NOTD mdrrrrrrrrrr kill me please)
-
-		// RPL_LUSER*
-		if (!handleLUsers(user->getFd())) {
-			return false;
-		}
-
-		// RPL_VERSION
-		if (!sendError(user->getFd(), "351", util::makeVector<std::string>("1.0", "IRFun", "no comment, enjoy our crash"))) {
-			return false;
-		}
+		sendNumericReply(user, "422", "MOTD File is missing");
 
 		return true;
 	}
 
-	bool Server::handleLUsers(int fd) const {
+	bool Server::handleLUsers(data::UserPtr user) const {
 		std::ostringstream os;
 
 		std::string luserClient;
@@ -282,9 +295,9 @@ namespace internal {
 		os.clear();
 
 		return
-			sendError(fd, "251", util::makeVector<std::string>(luserClient))
-			&& (luserChannels.empty() || sendError(fd, "254", util::makeVector<std::string>(luserChannels)))
-			&& sendError(fd, "255", util::makeVector<std::string>(luserClient))
+			sendNumericReply(user, "251", luserClient)
+			&& (luserChannels.empty() || sendNumericReply(user, "254", luserChannels))
+			&& sendNumericReply(user, "255", luserClient)
 		;
 	}
 

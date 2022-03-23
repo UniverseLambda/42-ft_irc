@@ -14,6 +14,8 @@ std::string find_msg(std::map<int, content > *mamap, int fd, char *msg){
 	std::map<int, content >::iterator	it = mamap->find(fd);
 	int									size = tmp.size();
 
+	tmp.find("\r\n");
+
 	while (i < size){
 		if ((tmp[i] == '\r' && tmp[i + 1] && tmp[i + 1] == '\n')
 			|| (tmp[i] == '\n' && it != mamap->end() && it->second.r)){
@@ -50,7 +52,7 @@ int	main(){
 	}
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(8080); // from little endian to big endian
+	address.sin_port = htons(8081); // from little endian to big endian
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1){
 		std::cout << "Error, failed to bind\n";
 		exit(EXIT_FAILURE);

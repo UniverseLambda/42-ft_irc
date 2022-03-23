@@ -32,6 +32,8 @@ namespace internal {
 		data::UserPtr addUser(int fd);
 		bool removeUser(int fd);
 
+		static std::string getHost();
+
 		std::string getPassword() const;
 		data::UserPtr getUser(int fd) const;
 		data::ChannelPtr getChannel(std::string name) const;
@@ -49,12 +51,14 @@ namespace internal {
 
 	private:
 
-		bool requiresParam(int fd, std::string command, std::vector<std::string> params, std::size_t count);
-		bool sendError(int fd, std::string errorCode, std::vector<std::string> params) const;
+		bool requiresParam(data::UserPtr user, std::string command, std::vector<std::string> params, std::size_t count);
+
+		bool sendNumericReply(data::UserPtr user, std::string code, std::string param) const;
+		bool sendNumericReply(data::UserPtr user, std::string code, std::vector<std::string> params) const;
 
 		bool tryToAuthenticate(data::UserPtr user);
 
-		bool handleLUsers(int fd) const;
+		bool handleLUsers(data::UserPtr user) const;
 
 		bool handleMode(data::UserPtr user, std::vector<std::string> params);
 
