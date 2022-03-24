@@ -4,6 +4,8 @@
 #include <set>
 #include <map>
 
+#include <vector>
+
 #include <stdexcept>
 
 #include "Forward.hpp"
@@ -54,6 +56,7 @@ namespace data {
 		void setOperator(UserPtr user, bool op) throw(std::out_of_range);
 		bool isOperator(UserPtr user) const throw(std::out_of_range);
 
+		void admitMode(std::string mode, bool addMode, std::vector<std::string> params);
 		bool setMode(ChannelMode mode, bool addMode);
 		ChannelMode getMode() const;
 		std::string getModeString() const;
@@ -63,6 +66,8 @@ namespace data {
 
 		bool userJoin(UserPtr user);
 		void userDisconnected(UserPtr user);
+
+		bool isInChannel(UserPtr user) const;
 
 		bool sendMessage(UserPtr sender, internal::Message message);
 

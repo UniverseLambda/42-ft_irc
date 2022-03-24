@@ -205,7 +205,7 @@ namespace internal {
 				}
 			}
 		} else if (command == "MODE") {
-			if (!requiresParam(user, command, params, 2))
+			if (!requiresParam(user, command, params, 1))
 				return true;
 
 			return handleMode(user, params);
@@ -306,9 +306,37 @@ namespace internal {
 
 		if (params[0][0] != '&' && params[0][0] != '#') {
 			// User
-		} else {
-			// Channel
+			return sendNumericReply(user, "501", "Unknown MODE flag");
 		}
+
+		data::ChannelPtr target = getChannel(params[0]);
+
+		// Checking if channel exists
+		if (!target) {
+			return sendNumericReply(user, "401", "No such nick/channel");
+		}
+
+		// Checking if user's in channel
+		if (!target->isInChannel(user)) {
+			return sendNumericReply(user, "441", util::makeVector<std::string>(user->getNickname(), target->getName(), "They aren't on that channel"));
+		}
+
+		// Simple mode request
+		if (params.size() == 1) {
+			return sendNumericReply(user, "324", "+" + target->getModeString());
+		}
+
+		// Trying to set mode
+
+		// Checking if user is operator
+		if (!target->isOperator(user)) {
+			return sendNumericReply(user, "482", util::makeVector<std::string>(target->getName(), "You're not channel operator"));
+		}
+
+		bool addition = params[1][0] != '-';
+
+		(void)addition;
+
 		return true;
 	}
 

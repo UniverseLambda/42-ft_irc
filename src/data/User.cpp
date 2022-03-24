@@ -109,10 +109,8 @@ namespace data {
 	std::string User::getModeString() const {
 		std::ostringstream os;
 
-		int v = 0x001;
-
-		for (int i = 0; i != UMODE_END; i <<= 1) {
-			os << getModeChar(static_cast<UserMode>(v));
+		for (int i = 0x001; i != UMODE_END; i <<= 1) {
+			os << getModeChar(static_cast<UserMode>(i));
 		}
 
 		return os.str();

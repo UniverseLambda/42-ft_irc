@@ -75,6 +75,18 @@ namespace data {
 		} catch (...) {}
 	}
 
+	bool Channel::isInChannel(UserPtr user) const {
+		return !!mUsers.count(user);
+	}
+
+	void Channel::admitMode(std::string mode, bool addMode, std::vector<std::string> params) {
+		(void)params;
+		for (std::size_t i = 0, p = 0; i < mode.size(); ++i) {
+			(void)p;
+			setMode(getMode(mode[i]), addMode);
+		}
+	}
+
 	bool Channel::setMode(ChannelMode mode, bool addMode) {
 		if (addMode) {
 			mMode = mMode | mode;
@@ -91,10 +103,8 @@ namespace data {
 	std::string Channel::getModeString() const {
 		std::ostringstream os;
 
-		int v = 0x001;
-
-		for (int i = 0; i != CMODE_END; i <<= 1) {
-			os << getModeChar(static_cast<ChannelMode>(v));
+		for (int i = 0x001; i != CMODE_END; i <<= 1) {
+			os << getModeChar(static_cast<ChannelMode>(i));
 		}
 
 		return os.str();
