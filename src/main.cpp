@@ -5,35 +5,52 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <iostream>
 
 #include <internal/Server.hpp>
 
-std::string find_msg(std::map<int, content > *mamap, int fd, char *msg){
+void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::ServerPtr server){
 	int									i = 0;
 	std::string							tmp(msg);
 	std::map<int, content >::iterator	it = mamap->find(fd);
 	int									size = tmp.size();
+	int									start = 0;
 
 	while (i < size){
 		if ((tmp[i] == '\r' && tmp[i + 1] && tmp[i + 1] == '\n')
 			|| (tmp[i] == '\n' && it != mamap->end() && it->second.r)){
-			if (it == mamap->end())
-				return tmp;
-			it->second.buff += tmp.substr(0, i);
+			if (it == mamap->end()){
+				msg_parser(tmp.substr(start, i), fd, server);
+				if (tmp[i] && tmp[i] == '\r')
+				i++;
+				if (tmp[i] && tmp[i] == '\n')
+					i++;
+				start = i;
+				continue ;
+			}
+			it->second.buff += tmp.substr(start, i);
 			tmp = it->second.buff;
-			return tmp;
+			msg_parser(tmp.substr(start, i), fd, server);
+			if (tmp[i] && tmp[i] == '\r')
+				i++;
+			if (tmp[i] && tmp[i] == '\n')
+				i++;
+			start = i;
+			continue ;
 		}
-		i++;
+		else
+			i++;
 	}
-	if (it == mamap->end())
-		mamap->insert(std::make_pair(fd, content()));
-	it = mamap->find(fd);
-	it->second.buff += tmp.substr(0, size);
-	if (tmp[size - 1] == '\r')
-		it->second.r = true;
-	else
-		it->second.r = false;
-	return "";
+	if (i > start && size > 0){
+		if (it == mamap->end())
+			mamap->insert(std::make_pair(fd, content()));
+		it = mamap->find(fd);
+		it->second.buff += tmp.substr(start, size - start);
+		if (tmp[size - 1] == '\r')
+			it->second.r = true;
+		else
+			it->second.r = false;
+	}
 }
 
 int	main(){
@@ -50,7 +67,7 @@ int	main(){
 	}
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(8080); // from little endian to big endian
+	address.sin_port = htons(8081); // from little endian to big endian
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1){
 		std::cout << "Error, failed to bind\n";
 		exit(EXIT_FAILURE);
@@ -86,8 +103,7 @@ int	main(){
 				memset(buffer, 0, 4097);
 				result = read(it->fd, buffer, 4096);
 				std::string str;
-				if (!(str = find_msg(&mamap, it->fd, buffer)).empty())
-					msg_parser(str, it->fd, &server);
+				find_msg(&mamap, it->fd, buffer, &server);
 				std::cout << buffer << std::endl;
 				if (result < 0)
 					std::cout << "couldn't read from socket\n";
