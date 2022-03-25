@@ -129,11 +129,11 @@ namespace internal {
 	}
 
 	bool Server::admitMessage(int fd, std::string command, std::vector<std::string> params) {
-		data::UserPtr user = getUser(fd);
+		data::UserPtr user;
 		// api::IComm *commAPI = getCommInterface();
 
-		if (!user) {
-			return false;
+		if (!(user = getUser(fd))) {
+			user = addUser(fd);
 		}
 
 		if (command == "PASS") {
@@ -341,7 +341,7 @@ namespace internal {
 	}
 
 	bool Server::checkNickname(const std::string &nick) {
-		if (!nick.empty())
+		if (nick.empty())
 			return false;
 
 		if (!std::isalpha(nick[0]))
