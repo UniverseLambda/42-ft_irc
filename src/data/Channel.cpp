@@ -79,11 +79,19 @@ namespace data {
 		return !!mUsers.count(user);
 	}
 
-	void Channel::admitMode(std::string mode, bool addMode, std::vector<std::string> params) {
+	void Channel::admitMode(std::string modes, bool addMode, std::vector<std::string> params) {
 		(void)params;
-		for (std::size_t i = 0, p = 0; i < mode.size(); ++i) {
+		for (std::size_t i = 0, p = 0; i < modes.size(); ++i) {
+			Mode mode = getMode(modes[i]);
 			(void)p;
-			setMode(getMode(mode[i]), addMode);
+
+			if (mode == CMODE_OPERATOR) {
+
+			} else if (mode == CMODE_BAN) {
+
+			}
+
+			setMode(mode, addMode);
 		}
 	}
 

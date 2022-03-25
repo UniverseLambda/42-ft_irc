@@ -49,28 +49,17 @@ namespace internal {
 
 		bool admitMessage(int fd, std::string command, std::vector<std::string> params = std::vector<std::string>());
 
-	private:
-
-		bool requiresParam(data::UserPtr user, std::string command, std::vector<std::string> params, std::size_t count);
-
 		bool sendNumericReply(data::UserPtr user, std::string code, std::string param) const;
 		bool sendNumericReply(data::UserPtr user, std::string code, std::vector<std::string> params) const;
+
+	private:
+		bool requiresParam(data::UserPtr user, std::string command, std::vector<std::string> params, std::size_t count);
 
 		bool tryToAuthenticate(data::UserPtr user);
 
 		bool handleLUsers(data::UserPtr user) const;
 
 		bool handleMode(data::UserPtr user, std::vector<std::string> params);
-
-		template<typename _Tp>
-		void genericHandleMode(data::UserPtr user, _Tp *target, std::vector<std::string> params) {
-			// typedef typename _Tp::Mode Mode;
-
-			if (params.size() == 1) {
-				util::sendNumericReply(getCommInterface(), user, "221", util::makeVector("+" + target->getModeString()));
-				return;
-			}
-		}
 
 		static bool checkNickname(const std::string &nick);
 	};

@@ -136,6 +136,10 @@ namespace internal {
 			user = addUser(fd);
 		}
 
+		if (command == "CAP") {
+			return false;
+		}
+
 		if (command == "PASS") {
 			if (!requiresParam(user, command, params, 1))
 				return true;
