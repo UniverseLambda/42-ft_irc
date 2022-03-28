@@ -20,7 +20,7 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 		if ((tmp[i] == '\r' && tmp[i + 1] && tmp[i + 1] == '\n')
 			|| (tmp[i] == '\n' && it != mamap->end() && it->second.r)){
 			if (it == mamap->end()){
-				msg_parser(tmp.substr(start, i), fd, server);
+				msg_parser(tmp.substr(start, i - start), fd, server);
 				if (tmp[i] && tmp[i] == '\r')
 				i++;
 				if (tmp[i] && tmp[i] == '\n')
@@ -30,7 +30,7 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 			}
 			it->second.buff += tmp.substr(start, i);
 			tmp = it->second.buff;
-			msg_parser(tmp.substr(start, i), fd, server);
+			msg_parser(tmp.substr(start, i - start), fd, server);
 			if (tmp[i] && tmp[i] == '\r')
 				i++;
 			if (tmp[i] && tmp[i] == '\n')
@@ -42,8 +42,8 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 			i++;
 	}
 	if (i > start && size > 0){
-		if (it == mamap->end())
-			mamap->insert(std::make_pair(fd, content()));
+		if (it == mamap->end()){
+			mamap->insert(std::make_pair(fd, content()));}
 		it = mamap->find(fd);
 		it->second.buff += tmp.substr(start, size - start);
 		if (tmp[size - 1] == '\r')
@@ -104,7 +104,6 @@ int	main(){
 				result = read(it->fd, buffer, 4096);
 				std::string str;
 				find_msg(&mamap, it->fd, buffer, &server);
-				std::cout << buffer << std::endl;
 				if (result < 0)
 					std::cout << "couldn't read from socket\n";
 				else if (result == 0){
