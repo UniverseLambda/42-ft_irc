@@ -36,6 +36,7 @@ namespace internal {
 
 		std::string getPassword() const;
 		data::UserPtr getUser(int fd) const;
+		data::UserPtr getUser(std::string nickname) const;
 		data::ChannelPtr getChannel(std::string name) const;
 
 		data::ChannelPtr getOrCreateChannel(std::string name);

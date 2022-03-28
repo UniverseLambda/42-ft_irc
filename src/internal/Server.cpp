@@ -73,6 +73,15 @@ namespace internal {
 		return NULL;
 	}
 
+	data::UserPtr Server::getUser(std::string nickname) const {
+		for (userStorage::const_iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+			if (it->second->getNickname() == nickname) {
+				return it->second;
+			}
+		}
+
+		return NULL;
+	}
 
 	data::ChannelPtr Server::getChannel(std::string name) const {
 		try {

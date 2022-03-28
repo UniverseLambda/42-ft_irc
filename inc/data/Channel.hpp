@@ -17,20 +17,15 @@ namespace data {
 	class Channel {
 	public:
 		enum ChannelMode {
-															// Flags
+															// Flags	Status
 			CMODE_NONE							= 0x000,
-			CMODE_OPERATOR						= 0x001,	// o
-			CMODE_PRIVATE						= 0x002,	// p
-			CMODE_SECRET						= 0x004,	// s
-			CMODE_INVITE						= 0x008,	// i
-			CMODE_TOPIC_OP_ONLY					= 0x010,	// t
-			CMODE_NO_OUTSIDE_CLIENT				= 0x020,	// n
-			CMODE_MODERATED						= 0x040,	// m
-			CMODE_LIMIT							= 0x080,	// l
-			CMODE_BAN							= 0x100,	// b
-			CMODE_SPEAK_ON_MODERATED_CHANNEL	= 0x200,	// v
-			CMODE_PASSWORD						= 0x400,	// k
-			CMODE_END							= 0x800
+			CMODE_OPERATOR						= 0x001,	// o		SUPPORTED
+			CMODE_PRIVATE						= 0x002,	// p		TO REMOVE
+			CMODE_SECRET						= 0x004,	// s		TO REMOVE
+			CMODE_INVITE						= 0x008,	// i		TODO
+			CMODE_TOPIC_OP_ONLY					= 0x010,	// t		TODO
+			CMODE_BAN							= 0x020,	// b		TO REMOVE?
+			CMODE_END							= (CMODE_BAN << 1)
 		};
 
 		typedef ChannelMode Mode;
@@ -41,6 +36,7 @@ namespace data {
 		std::string mName;
 		internal::ServerPtr mServer;
 		user_storage mUsers;
+		std::vector<std::string> mBanList;
 		ChannelMode mMode;
 
 	public:
@@ -56,7 +52,7 @@ namespace data {
 		void setOperator(UserPtr user, bool op) throw(std::out_of_range);
 		bool isOperator(UserPtr user) const throw(std::out_of_range);
 
-		void admitMode(std::string mode, bool addMode, std::vector<std::string> params);
+		void admitMode(UserPtr sender, std::string mode, bool addMode, std::vector<std::string> params);
 		bool setMode(ChannelMode mode, bool addMode);
 		ChannelMode getMode() const;
 		std::string getModeString() const;

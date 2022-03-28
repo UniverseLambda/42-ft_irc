@@ -4,6 +4,7 @@
 
 #include <util/Util.hpp>
 
+#include <algorithm>
 #include <sstream>
 
 namespace data {
@@ -79,19 +80,55 @@ namespace data {
 		return !!mUsers.count(user);
 	}
 
-	void Channel::admitMode(std::string modes, bool addMode, std::vector<std::string> params) {
-		(void)params;
+	void Channel::admitMode(UserPtr sender, std::string modes, bool addMode, std::vector<std::string> params) {
+		std::vector<UserPtr> newOps;
+		std::vector<std::string> newBans;
+		Mode finalMode;
+
 		for (std::size_t i = 0, p = 0; i < modes.size(); ++i) {
 			Mode mode = getMode(modes[i]);
-			(void)p;
 
-			if (mode == CMODE_OPERATOR) {
+			if (!mode) {
+				mServer->sendNumericReply(sender, "472", util::makeVector<std::string>(modes.substr(i, 1), "is unknown mode char to me for " + mName));
+				return;
+			} else if (mode == CMODE_OPERATOR) {
+				if (p + 1 >= params.size()) {
+					mServer->sendNumericReply(sender, "461", util::makeVector<std::string>("MODE", "Not enough parameters"));
+					return;
+				}
 
+				std::string &user = params[p++];
+
+				UserPtr userPtr = mServer->getUser(user);
+
+				if (!userPtr || mUsers.count(userPtr) == 0) {
+					mServer->sendNumericReply(sender, "441", util::makeVector<std::string>(user, mName, "They aren't on that channel"));
+					return;
+				}
+
+				newOps.push_back(userPtr);
 			} else if (mode == CMODE_BAN) {
+				if (p + 1 >= params.size()) {
+					mServer->sendNumericReply(sender, "461", util::makeVector<std::string>("MODE", "Not enough parameters"));
+					return;
+				}
 
+				newBans.push_back(params[p++]);
+			} else {
+				finalMode = finalMode | mode;
 			}
+		}
 
-			setMode(mode, addMode);
+		for (std::vector<UserPtr>::iterator it = newOps.begin(); it != newOps.end(); ++it) {
+			mUsers[*it] = addMode;
+		}
+
+		for (std::vector<std::string>::iterator it = newBans.begin(); it != newBans.end(); ++it) {
+			if (addMode) {
+				mBanList.push_back(*it);
+			} else {
+				mBanList.erase(std::find(mBanList.begin(), mBanList.end(), *it));
+			}
 		}
 	}
 
@@ -125,12 +162,7 @@ namespace data {
 			case CMODE_SECRET:						return 's';
 			case CMODE_INVITE:						return 'i';
 			case CMODE_TOPIC_OP_ONLY:				return 't';
-			case CMODE_NO_OUTSIDE_CLIENT:			return 'n';
-			case CMODE_MODERATED:					return 'm';
-			case CMODE_LIMIT:						return 'l';
 			case CMODE_BAN:							return 'b';
-			case CMODE_SPEAK_ON_MODERATED_CHANNEL:	return 'v';
-			case CMODE_PASSWORD:					return 'k';
 			default:								return '\0';
 		}
 	}
@@ -142,12 +174,7 @@ namespace data {
 			case 's':			return CMODE_SECRET;
 			case 'i':			return CMODE_INVITE;
 			case 't':			return CMODE_TOPIC_OP_ONLY;
-			case 'n':			return CMODE_NO_OUTSIDE_CLIENT;
-			case 'm':			return CMODE_MODERATED;
-			case 'l':			return CMODE_LIMIT;
 			case 'b':			return CMODE_BAN;
-			case 'v':			return CMODE_SPEAK_ON_MODERATED_CHANNEL;
-			case 'k':			return CMODE_PASSWORD;
 		}
 		return CMODE_NONE;
 	}
