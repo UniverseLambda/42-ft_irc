@@ -9,6 +9,8 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 	std::vector<std::string>	params;
 	size_t						len = msg.size();
 
+	if (!len)
+		return ;
 	while (i < len){
 		while (i < len && msg[i] == ' ')
 			i++;
@@ -26,6 +28,5 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 		else if (i > start)
 			params.push_back(msg.substr(start, i - start));
 	}
-
 	server->admitMessage(fd, cmd, params);
 }
