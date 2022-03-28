@@ -139,7 +139,8 @@ namespace internal {
 
 	bool Server::admitMessage(int fd, std::string command, std::vector<std::string> params) {
 		data::UserPtr user;
-		// api::IComm *commAPI = getCommInterface();
+
+		std::cout << "[fd:" << fd << "]: " << command << std::endl;
 
 		if (!(user = getUser(fd))) {
 			user = addUser(fd);
@@ -236,11 +237,20 @@ namespace internal {
 	}
 
 	bool Server::sendNumericReply(data::UserPtr user, std::string code, std::string param) const {
-		return util::sendNumericReply(getCommInterface(), user, code, param);
+		return sendNumericReply(user, code, util::makeVector(param));
 	}
 
 	bool Server::sendNumericReply(data::UserPtr user, std::string code, std::vector<std::string> params) const {
-		return util::sendNumericReply(getCommInterface(), user, code, params);
+		params.insert(params.begin(), user->getNickname());
+		return sendMessage(user, Origin(getHost()), code, params, true);
+	}
+
+	bool Server::sendMessage(data::UserPtr user, util::Optional<internal::Origin> prefix, std::string command, std::string param, bool lastParamExtended) const {
+		return sendMessage(user, prefix, command, util::makeVector(param), lastParamExtended);
+	}
+
+	bool Server::sendMessage(data::UserPtr user, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool lastParamExtended) const {
+		return mCommInterface->sendMessage(user->getFd(), prefix, command, params, lastParamExtended);
 	}
 
 	bool Server::tryToAuthenticate(data::UserPtr user) {
@@ -253,7 +263,7 @@ namespace internal {
 		}
 
 		if (user->getSentPassword() != getPassword()) {
-			return util::sendNumericReply(mCommInterface, user, "464", "Password incorrect");
+			return sendNumericReply(user, "464", "Password incorrect");
 		}
 
 		user->setAuthenticated(true);

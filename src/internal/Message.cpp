@@ -1,19 +1,22 @@
 #include <internal/Message.hpp>
 
 namespace internal {
-	Message::Message(Origin origin, std::string message):
-		mOrigin(origin),
-		mMessage(message) {}
-
-	Message::Message(Origin origin, std::string message, std::string channel):
+	Message::Message(Origin origin, std::string message, bool notice):
 		mOrigin(origin),
 		mMessage(message),
-		mChannel(channel) {}
+		mNotice(notice) {}
+
+	Message::Message(Origin origin, std::string message, std::string channel, bool notice):
+		mOrigin(origin),
+		mMessage(message),
+		mChannel(channel),
+		mNotice(notice) {}
 
 	Message::Message(const Message &orig):
 		mOrigin(orig.mOrigin),
 		mMessage(orig.mMessage),
-		mChannel(orig.mChannel) {}
+		mChannel(orig.mChannel),
+		mNotice(orig.mNotice) {}
 
 	Message::~Message() {}
 
@@ -21,6 +24,7 @@ namespace internal {
 		mOrigin = orig.mOrigin;
 		mMessage = orig.mMessage;
 		mChannel = orig.mChannel;
+		mNotice = orig.mNotice;
 
 		return (*this);
 	}
@@ -35,6 +39,10 @@ namespace internal {
 
 	std::string Message::getChannel() const {
 		return mChannel;
+	}
+
+	bool Message::isNotice() const {
+		return mNotice;
 	}
 
 	bool Message::hasChannel() const {
@@ -52,6 +60,6 @@ namespace internal {
 	}
 
 	std::ostream &operator<<(std::ostream &os, const Message &message) {
-		return (os << message.getOrigin().toString() << " " << message.getChannel() << ":" << message.getMessage());
+		return (os << message.getOrigin().toString() << " " << message.getChannel() << " (" << (message.isNotice() ? "NOTICE" : "PRIVMSG") << ")" << ":" << message.getMessage());
 	}
 } // namespace internal

@@ -68,9 +68,4 @@ namespace util {
 	}
 
 	std::vector<std::string> parseList(std::string list);
-
-	bool sendNumericReply(api::IComm *comm, data::UserPtr user, std::string code, std::string param);
-	bool sendNumericReply(api::IComm *comm, data::UserPtr user, std::string code, std::vector<std::string> params);
-	bool sendNumericReply(api::IComm *comm, internal::Origin origin, data::UserPtr user, std::string code, std::string param);
-	bool sendNumericReply(api::IComm *comm, internal::Origin origin, data::UserPtr user, std::string code, std::vector<std::string> params);
 } // namespace util

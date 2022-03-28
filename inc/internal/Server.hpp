@@ -52,6 +52,8 @@ namespace internal {
 
 		bool sendNumericReply(data::UserPtr user, std::string code, std::string param) const;
 		bool sendNumericReply(data::UserPtr user, std::string code, std::vector<std::string> params) const;
+		bool sendMessage(data::UserPtr user, util::Optional<internal::Origin> prefix, std::string command, std::string params, bool lastParamExtended = false) const;
+		bool sendMessage(data::UserPtr user, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params = std::vector<std::string>(), bool lastParamExtended = false) const;
 
 	private:
 		bool requiresParam(data::UserPtr user, std::string command, std::vector<std::string> params, std::size_t count);

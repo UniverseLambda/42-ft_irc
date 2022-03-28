@@ -15,10 +15,11 @@ namespace internal {
 		Origin mOrigin;
 		std::string mMessage;
 		std::string mChannel;
+		bool mNotice;
 
 	public:
-		Message(Origin origin, std::string message);
-		Message(Origin origin, std::string message, std::string channel);
+		Message(Origin origin, std::string message, bool notice = false);
+		Message(Origin origin, std::string message, std::string channel, bool notice = false);
 		Message(const Message &orig);
 		~Message();
 
@@ -27,6 +28,7 @@ namespace internal {
 		Origin getOrigin() const;
 		std::string getMessage() const;
 		std::string getChannel() const;
+		bool isNotice() const;
 
 		bool hasChannel() const;
 
