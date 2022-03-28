@@ -250,7 +250,24 @@ namespace internal {
 	}
 
 	bool Server::sendMessage(data::UserPtr user, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool lastParamExtended) const {
-		return mCommInterface->sendMessage(user->getFd(), prefix, command, params, lastParamExtended);
+		if (mCommInterface) {
+			return mCommInterface->sendMessage(user->getFd(), prefix, command, params, lastParamExtended);
+		}
+		std::cerr << "NO ICOMM SET" << std::endl;
+		std::cerr << "MESSAGE CONTENT: " << std::endl;
+		std::cerr << " user:   " << user->getFd() << std::endl;
+		std::cerr << " prefix: " << prefix << std::endl;
+		std::cerr << " command: " << command;
+
+		for (std::size_t i = 0; i < params.size(); ++i) {
+			std::cerr << " ";
+			if (i + 1 == params.size() && lastParamExtended)
+				std::cerr << ":";
+			std::cerr << params[i];
+		}
+
+		std::cerr << std::endl;
+		return false;
 	}
 
 	bool Server::tryToAuthenticate(data::UserPtr user) {

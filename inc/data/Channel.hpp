@@ -24,7 +24,7 @@ namespace data {
 			CMODE_SECRET						= 0x004,	// s		TO REMOVE
 			CMODE_INVITE						= 0x008,	// i		TODO
 			CMODE_TOPIC_OP_ONLY					= 0x010,	// t		TODO
-			CMODE_BAN							= 0x020,	// b		TO REMOVE?
+			CMODE_BAN							= 0x020,	// b		SUPPORTED
 			CMODE_END							= (CMODE_BAN << 1)
 		};
 
@@ -36,7 +36,7 @@ namespace data {
 		std::string mName;
 		internal::ServerPtr mServer;
 		user_storage mUsers;
-		std::vector<std::string> mBanList;
+		std::set<std::string> mBanList;
 		ChannelMode mMode;
 
 	public:

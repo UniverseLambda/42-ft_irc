@@ -44,6 +44,13 @@ namespace data {
 
 	bool Channel::userJoin(UserPtr user) {
 		try {
+			if (mBanList.count(user->getNickname()) == 1) {
+				mServer->sendNumericReply(user, "474", util::makeVector<std::string>(mName, "Cannot join channel (+b)"));
+				return false;
+			}
+
+			// TODO: Check for invite
+
 			if (!mUsers.insert(std::make_pair(user, mUsers.empty())).second) {
 				return false;
 			}
@@ -121,11 +128,21 @@ namespace data {
 			mUsers[*it] = addMode;
 		}
 
+
 		for (std::vector<std::string>::iterator it = newBans.begin(); it != newBans.end(); ++it) {
 			if (addMode) {
-				mBanList.push_back(*it);
+				mBanList.insert(*it);
+
+				for (user_storage::iterator uit = mUsers.begin(); uit != mUsers.end();) {
+					user_storage::iterator tmp_uit = uit;
+					++uit;
+
+					if (tmp_uit->first->getNickname() == *it) {
+						kickUser(tmp_uit->first);
+					}
+				}
 			} else {
-				mBanList.erase(std::find(mBanList.begin(), mBanList.end(), *it));
+				mBanList.erase(*it);
 			}
 		}
 	}
