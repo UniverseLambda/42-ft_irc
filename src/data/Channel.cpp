@@ -132,18 +132,13 @@ namespace data {
 		for (std::vector<std::string>::iterator it = newBans.begin(); it != newBans.end(); ++it) {
 			if (addMode) {
 				mBanList.insert(*it);
-
-				for (user_storage::iterator uit = mUsers.begin(); uit != mUsers.end();) {
-					user_storage::iterator tmp_uit = uit;
-					++uit;
-
-					if (tmp_uit->first->getNickname() == *it) {
-						kickUser(tmp_uit->first);
-					}
-				}
 			} else {
 				mBanList.erase(*it);
 			}
+		}
+
+		for (std::map<UserPtr, bool>::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+			mServer->sendMessage(it->first, it->first->getOrigin(), "MODE", util::makeVector<std::string>(mName, (addMode ? "+" : "-") + modes));
 		}
 	}
 

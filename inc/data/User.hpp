@@ -8,21 +8,10 @@
 #include <internal/Forward.hpp>
 
 #include <internal/Message.hpp>
+#include <internal/Origin.hpp>
 
 namespace data {
 	class User {
-	public:
-		enum UserMode {
-			UMODE_NONE							= 0x00,
-			UMODE_INVISIBLE						= 0x01,
-			UMODE_NOTICE_RECEIPT				= 0x02,
-			UMODE_WALLOPS_RECEIVER				= 0x04,
-			UMODE_OPERATOR						= 0x08,
-			UMODE_END							= 0x10,
-		};
-
-		typedef UserMode Mode;
-
 	private:
 		int mFd;
 		internal::ServerPtr mServer;
@@ -34,8 +23,6 @@ namespace data {
 		std::string mRealname;
 		std::string mHostname;
 		bool mAuthenticated;
-
-		UserMode mMode;
 
 		std::set<ChannelPtr> mChannels;
 
@@ -53,7 +40,6 @@ namespace data {
 		void setRealname(const std::string &realname);
 		void setHostname(const std::string &hostname);
 		void setAuthenticated(bool auth);
-		void setMode(UserMode mode, bool addMode);
 
 		int getFd() const;
 		std::string getSentPassword() const;
@@ -62,11 +48,7 @@ namespace data {
 		std::string getRealname() const;
 		std::string getHostname() const;
 		bool isAuthenticated() const;
-		UserMode getMode() const;
-		std::string getModeString() const;
-		static char getModeChar(UserMode mode);
-		static UserMode getMode(char c);
-		bool isOperator() const;
+		internal::Origin getOrigin() const;
 
 		bool channelJoined(ChannelPtr channel);
 		bool kickedFromChannel(ChannelPtr channel);
@@ -75,8 +57,4 @@ namespace data {
 
 		void dispatchDisconnect();
 	};
-
-	User::UserMode operator|(User::UserMode um0, User::UserMode um1);
-	User::UserMode operator&(User::UserMode um0, User::UserMode um1);
-	User::UserMode operator~(User::UserMode um);
 }

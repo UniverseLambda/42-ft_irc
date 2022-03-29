@@ -10,9 +10,9 @@
 #include <util/Util.hpp>
 
 namespace data {
-	User::User(): mFd(-1), mServer(NULL), mAuthenticated(false), mMode(UMODE_NONE) {}
+	User::User(): mFd(-1), mServer(NULL), mAuthenticated(false) {}
 
-	User::User(int fd, internal::ServerPtr server): mFd(fd), mServer(server), mAuthenticated(false), mMode(UMODE_NONE) {}
+	User::User(int fd, internal::ServerPtr server): mFd(fd), mServer(server), mAuthenticated(false) {}
 
 	User::User(const User &copy):
 		mFd(copy.mFd),
@@ -21,10 +21,7 @@ namespace data {
 		mUsername(copy.mUsername),
 		mRealname(copy.mRealname),
 		mHostname(copy.mHostname),
-		mAuthenticated(copy.mAuthenticated),
-		mMode(copy.mMode) {
-
-	}
+		mAuthenticated(copy.mAuthenticated) {}
 
 	User::~User() {}
 
@@ -36,7 +33,6 @@ namespace data {
 		mRealname = rhs.mRealname;
 		mHostname = rhs.mHostname;
 		mAuthenticated = rhs.mAuthenticated;
-		mMode = rhs.mMode;
 
 		return *this;
 	}
@@ -63,14 +59,6 @@ namespace data {
 
 	void User::setAuthenticated(bool authenticated) {
 		mAuthenticated = authenticated;
-	}
-
-	void User::setMode(UserMode mode, bool addMode) {
-		if (addMode) {
-			mMode = mMode | mode;
-		} else {
-			mMode = mMode & (~mode);
-		}
 	}
 
 	int User::getFd() const {
@@ -101,43 +89,8 @@ namespace data {
 		return mAuthenticated;
 	}
 
-	User::UserMode User::getMode() const {
-		return mMode;
-	}
-
-
-	std::string User::getModeString() const {
-		std::ostringstream os;
-
-		for (int i = 0x001; i != UMODE_END; i <<= 1) {
-			os << getModeChar(static_cast<UserMode>(i));
-		}
-
-		return os.str();
-	}
-
-	char User::getModeChar(User::UserMode mode) {
-		switch (mode) {
-			case UMODE_INVISIBLE:					return 'i';
-			case UMODE_NOTICE_RECEIPT:				return 's';
-			case UMODE_WALLOPS_RECEIVER:			return 'w';
-			case UMODE_OPERATOR:					return 'o';
-			default:								return '\0';
-		}
-	}
-
-	User::UserMode User::getMode(char c) {
-		switch (c) {
-			case 'i':			return UMODE_INVISIBLE;
-			case 's':			return UMODE_NOTICE_RECEIPT;
-			case 'w':			return UMODE_WALLOPS_RECEIVER;
-			case 'o':			return UMODE_OPERATOR;
-		}
-		return UMODE_NONE;
-	}
-
-	bool User::isOperator() const {
-		return !!(mMode & UMODE_OPERATOR);
+	internal::Origin User::getOrigin() const {
+		return internal::Origin(mNickname, mUsername, mHostname);
 	}
 
 	bool User::channelJoined(ChannelPtr channel) {
@@ -157,17 +110,5 @@ namespace data {
 		for (std::set<ChannelPtr>::iterator it = mChannels.begin(); it != mChannels.end(); ++it) {
 			(*it)->userDisconnected(this);
 		}
-	}
-
-	User::UserMode operator|(User::UserMode um0, User::UserMode um1) {
-		return static_cast<User::UserMode>(static_cast<int>(um0) | static_cast<int>(um1));
-	}
-
-	User::UserMode operator&(User::UserMode um0, User::UserMode um1) {
-		return static_cast<User::UserMode>(static_cast<int>(um0) & static_cast<int>(um1));
-	}
-
-	User::UserMode operator~(User::UserMode um) {
-		return static_cast<User::UserMode>(~(static_cast<int>(um)));
 	}
 } // namespace data

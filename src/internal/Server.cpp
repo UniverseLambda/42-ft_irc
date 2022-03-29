@@ -131,7 +131,7 @@ namespace internal {
 		for (userStorage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
 			// We don't care if we couldn't manage to send the message
 
-			mCommInterface->sendMessage(it->second->getFd(), Origin(user->getNickname()), "QUIT", util::makeVector(message), true);
+			sendMessage(it->second, user->getOrigin(), "QUIT", message, true);
 		}
 
 		delete user;
@@ -313,13 +313,7 @@ namespace internal {
 		std::string luserChannels;
 		std::string luserMe;
 
-		std::size_t invisible = 0;
-
-		for (userStorage::const_iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-			invisible += !!(it->second->getMode() & data::User::UMODE_INVISIBLE);
-		}
-
-		os << "There are " << mUsers.size() << " users and " << invisible << " invisible on 1 servers";
+		os << "There are " << mUsers.size() << " users and 0 invisible on 1 servers";
 		luserClient = os.str();
 		os.clear();
 
@@ -374,9 +368,9 @@ namespace internal {
 		}
 
 		bool addition = params[1][0] != '-';
+		std::string modeParam = params[1].substr(params[1][0] == '+' || params[1][0] == '-');
 
-		(void)addition;
-
+		target->admitMode(user, modeParam, addition, std::vector<std::string>(params.begin() + 2, params.end()));
 		return true;
 	}
 
