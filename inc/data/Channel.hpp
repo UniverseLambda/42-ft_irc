@@ -12,6 +12,7 @@
 
 #include <internal/Forward.hpp>
 #include <internal/Message.hpp>
+#include <util/Optional.hpp>
 
 namespace data {
 	class Channel {
@@ -38,6 +39,7 @@ namespace data {
 		user_storage mUsers;
 		std::set<std::string> mBanList;
 		std::set<std::string> mInviteList;
+		std::string mTopic;
 		ChannelMode mMode;
 
 	public:
@@ -60,6 +62,10 @@ namespace data {
 
 		static char getModeChar(ChannelMode mode);
 		static ChannelMode getMode(char c);
+
+		std::string getTopic() const;
+		void setTopic(std::string &topic);
+		void topicMessage(UserPtr user, util::Optional<std::string> topic = util::Optional<std::string>());
 
 		bool userJoin(UserPtr user);
 		void userDisconnected(UserPtr user);

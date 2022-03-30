@@ -21,6 +21,7 @@ namespace data {
 		mUsers(orig.mUsers),
 		mBanList(orig.mBanList),
 		mInviteList(orig.mInviteList),
+		mTopic(orig.mTopic),
 		mMode(orig.mMode) {}
 
 	Channel::~Channel() {}
@@ -31,6 +32,7 @@ namespace data {
 		mUsers = orig.mUsers;
 		mBanList = orig.mBanList;
 		mInviteList = orig.mInviteList;
+		mTopic = orig.mTopic;
 		return *this;
 	}
 
@@ -76,13 +78,13 @@ namespace data {
 			}
 
 			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-				mServer->sendMessage(user, internal::Origin(user->getNickname(), user->getUsername(), user->getHostname()), "JOIN", mName, true);
+				mServer->sendMessage(it->first, user->getOrigin(), "JOIN", mName, true);
 
 				mServer->sendNumericReply(user, "353",
 					util::makeVector<std::string>(
 						(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" : "=",
 						mName,
-						(it->second ? "@" : "") + user->getNickname()
+						(it->second ? "@" : "") + it->first->getNickname()
 				));
 			}
 
@@ -203,6 +205,40 @@ namespace data {
 			case 'b':			return CMODE_BAN;
 		}
 		return CMODE_NONE;
+	}
+
+	std::string Channel::getTopic() const {
+		return mTopic;
+	}
+
+	void Channel::setTopic(std::string &topic) {
+		mTopic = topic;
+	}
+
+	void Channel::topicMessage(UserPtr user, util::Optional<std::string> topic) {
+		user_storage::iterator uit = mUsers.find(user);
+
+		if (uit == mUsers.end()) {
+			mServer->sendNumericReply(user, "442", util::makeVector<std::string>(mName, "You're not on that channel"));
+			return;
+		}
+
+		if (topic) {
+			if ((mMode & CMODE_TOPIC_OP_ONLY) && !(uit->second)) {
+				mServer->sendNumericReply(user, "482", util::makeVector<std::string>(mName, "You're not channel operator"));
+			} else {
+				mTopic = *topic;
+				for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+					mServer->sendMessage(it->first, user->getOrigin(), "TOPIC", util::makeVector(mName, mTopic), true);
+				}
+			}
+		} else {
+			if (mTopic.empty()) {
+				mServer->sendNumericReply(user, "331", util::makeVector<std::string>(mName, "No topic is set"));
+			} else {
+				mServer->sendNumericReply(user, "332", util::makeVector<std::string>(mName, mTopic));
+			}
+		}
 	}
 
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {

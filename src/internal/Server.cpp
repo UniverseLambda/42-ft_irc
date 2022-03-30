@@ -223,6 +223,23 @@ namespace internal {
 				return true;
 
 			return handleMode(user, params);
+		} else if (command == "TOPIC") {
+			if (!requiresParam(user, command, params, 1)) {
+				return true;
+			}
+
+			std::string &channelName = params[0];
+
+			try {
+				if (params.size() >= 2) {
+					mChannels.at(channelName)->topicMessage(user, params[1]);
+				} else {
+					mChannels.at(channelName)->topicMessage(user);
+				}
+
+			} catch (...) {
+				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
+			}
 		}
 
 		return true;
@@ -338,7 +355,7 @@ namespace internal {
 	bool Server::handleMode(data::UserPtr user, std::vector<std::string> params) {
 		(void)user;
 
-		if (params[0][0] != '&' && params[0][0] != '#') {
+		if (params[0].empty() || (params[0][0] != '&' && params[0][0] != '#')) {
 			// User
 			return sendNumericReply(user, "501", "Unknown MODE flag");
 		}
@@ -367,8 +384,18 @@ namespace internal {
 			return sendNumericReply(user, "482", util::makeVector<std::string>(target->getName(), "You're not channel operator"));
 		}
 
+		// If empty mode, then do nothing
+		if (params[1].empty()) {
+			return true;
+		}
+
 		bool addition = params[1][0] != '-';
 		std::string modeParam = params[1].substr(params[1][0] == '+' || params[1][0] == '-');
+
+		// If empty mode, then do nothing
+		if (modeParam.empty()) {
+			return true;
+		}
 
 		target->admitMode(user, modeParam, addition, std::vector<std::string>(params.begin() + 2, params.end()));
 		return true;
