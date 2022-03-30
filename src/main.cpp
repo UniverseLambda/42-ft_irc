@@ -1,4 +1,5 @@
 #include <emma/parsing.hpp>
+#include <cstdlib>
 #include <netinet/in.h>
 #include <algorithm>
 #include <sstream>
@@ -30,11 +31,8 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 			}
 			it->second.buff += tmp.substr(start, i);
 			msg_parser(it->second.buff, fd, server);
-			if ((tmp[i] == '\r' && tmp.size() > i + 2)
-			|| (tmp[i] == '\n' && tmp.size() > i + 1)){
-				mamap->erase(fd);
-				it = mamap->find(fd);
-			}
+			mamap->erase(fd);
+			it = mamap->find(fd);
 			if (tmp[i] && tmp[i] == '\r')
 				i++;
 			if (tmp[i] && tmp[i] == '\n')
@@ -57,25 +55,7 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 	}
 }
 
-// void	set_connection(int listen_fd, sockaddr_in address){
-// 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
-// 		std::cout << "Error\n";
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	address.sin_family = AF_INET;
-// 	address.sin_addr.s_addr = INADDR_ANY;
-// 	address.sin_port = htons(8081); // from little endian to big endian
-// 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1){
-// 		std::cout << "Error, failed to bind\n";
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	if (listen(listen_fd, 100) < 0){
-// 		std::cout << "Error, failed to listen on socket\n";
-// 		exit(EXIT_FAILURE);
-// 	}
-// }
-
-int	main(){
+int	main(int argc, char **argv){
 	int					listen_fd = 0, new_socket = 0;
 	sockaddr_in			address;
 	int					ns;
@@ -83,14 +63,13 @@ int	main(){
 	std::map<int, struct content > mamap;
 	internal::Server server("POUPOU", NULL);
 
-	// set_connection(listen_fd, address);
-	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+	if (argc != 2 || (listen_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		std::cout << "Error\n";
 		exit(EXIT_FAILURE);
 	}
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(8080); // from little endian to big endian
+	address.sin_port = htons(atoi(argv[1])); // from little endian to big endian
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1){
 		std::cout << "Error, failed to bind\n";
 		exit(EXIT_FAILURE);
