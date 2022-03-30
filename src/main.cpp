@@ -1,5 +1,5 @@
 #include <emma/parsing.hpp>
-
+#include <netinet/in.h>
 #include <algorithm>
 #include <sstream>
 #include <vector>
@@ -10,11 +10,11 @@
 #include <internal/Server.hpp>
 
 void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::ServerPtr server){
-	int									i = 0;
+	size_t								i = 0;
 	std::string							tmp(msg);
 	std::map<int, content >::iterator	it = mamap->find(fd);
-	int									size = tmp.size();
-	int									start = 0;
+	size_t									size = tmp.size();
+	size_t									start = 0;
 
 	tmp.find("\r\n");
 
@@ -24,7 +24,7 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 			if (it == mamap->end()){
 				msg_parser(tmp.substr(start, i - start), fd, server);
 				if (tmp[i] && tmp[i] == '\r')
-				i++;
+					i++;
 				if (tmp[i] && tmp[i] == '\n')
 					i++;
 				start = i;
@@ -32,7 +32,10 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 			}
 			it->second.buff += tmp.substr(start, i);
 			tmp = it->second.buff;
-			msg_parser(tmp.substr(start, i - start), fd, server);
+			msg_parser(tmp.substr(start, tmp.size()), fd, server);
+			if ((tmp[i] == '\r' && tmp.size() > i + 2) 
+			|| (tmp[i] == '\n' && tmp.size() > i + 1))
+				mamap->erase(fd);
 			if (tmp[i] && tmp[i] == '\r')
 				i++;
 			if (tmp[i] && tmp[i] == '\n')
@@ -55,14 +58,33 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 	}
 }
 
+// void	set_connection(int listen_fd, sockaddr_in address){
+// 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+// 		std::cout << "Error\n";
+// 		exit(EXIT_FAILURE);
+// 	}
+// 	address.sin_family = AF_INET;
+// 	address.sin_addr.s_addr = INADDR_ANY;
+// 	address.sin_port = htons(8081); // from little endian to big endian
+// 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1){
+// 		std::cout << "Error, failed to bind\n";
+// 		exit(EXIT_FAILURE);
+// 	}
+// 	if (listen(listen_fd, 100) < 0){
+// 		std::cout << "Error, failed to listen on socket\n";
+// 		exit(EXIT_FAILURE);
+// 	}
+// }
+
 int	main(){
-	int					listen_fd, new_socket;
+	int					listen_fd = 0, new_socket = 0;
 	sockaddr_in			address;
 	int					ns;
 	char				buffer[4097];
 	std::map<int, struct content > mamap;
 	internal::Server server("POUPOU", NULL);
 
+	// set_connection(listen_fd, address);
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		std::cout << "Error\n";
 		exit(EXIT_FAILURE);
@@ -110,6 +132,7 @@ int	main(){
 					std::cout << "couldn't read from socket\n";
 				else if (result == 0){
 					close(it->fd);
+					server.userDisconnected(it->fd);
 					it = poll_fds.erase(it);
 					continue;
 				}

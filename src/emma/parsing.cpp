@@ -1,5 +1,5 @@
 #include <emma/parsing.hpp>
-
+#include <iostream>
 #include <vector>
 
 void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
@@ -9,7 +9,7 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 	std::vector<std::string>	params;
 	size_t						len = msg.size();
 
-	if (!len)
+	if (len <= 0)
 		return ;
 	while (i < len){
 		while (i < len && msg[i] == ' ')
@@ -27,6 +27,10 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 			cmd = msg.substr(start, i - start);
 		else if (i > start)
 			params.push_back(msg.substr(start, i - start));
+	}
+	std::cout << "CMD = " << cmd<< std::endl;
+	for (size_t j=0; j< params.size() ; j++){
+		std::cout << params[j] << std::endl;
 	}
 	server->admitMessage(fd, cmd, params);
 }
