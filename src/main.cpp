@@ -13,8 +13,8 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 	size_t								i = 0;
 	std::string							tmp(msg);
 	std::map<int, content >::iterator	it = mamap->find(fd);
-	size_t									size = tmp.size();
-	size_t									start = 0;
+	size_t								size = tmp.size();
+	size_t								start = 0;
 
 	while (i < size){
 		if ((tmp[i] == '\r' && tmp[i + 1] && tmp[i + 1] == '\n')
@@ -29,11 +29,12 @@ void find_msg(std::map<int, content > *mamap, int fd, char *msg, internal::Serve
 				continue ;
 			}
 			it->second.buff += tmp.substr(start, i);
-			tmp = it->second.buff;
-			msg_parser(tmp.substr(start, tmp.size()), fd, server);
-			if ((tmp[i] == '\r' && tmp.size() > i + 2) 
-			|| (tmp[i] == '\n' && tmp.size() > i + 1))
+			msg_parser(it->second.buff, fd, server);
+			if ((tmp[i] == '\r' && tmp.size() > i + 2)
+			|| (tmp[i] == '\n' && tmp.size() > i + 1)){
 				mamap->erase(fd);
+				it = mamap->find(fd);
+			}
 			if (tmp[i] && tmp[i] == '\r')
 				i++;
 			if (tmp[i] && tmp[i] == '\n')
@@ -89,7 +90,7 @@ int	main(){
 	}
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(8081); // from little endian to big endian
+	address.sin_port = htons(8080); // from little endian to big endian
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) == -1){
 		std::cout << "Error, failed to bind\n";
 		exit(EXIT_FAILURE);
