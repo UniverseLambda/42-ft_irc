@@ -92,6 +92,10 @@ namespace internal {
 	}
 
 	data::ChannelPtr Server::getOrCreateChannel(std::string name) {
+		if (name.empty() || (name[0] != '@' && name[0] != '&')) {
+			return NULL;
+		}
+
 		try {
 			data::ChannelPtr chan = getChannel(name);
 
@@ -211,8 +215,13 @@ namespace internal {
 
 			std::vector<std::string> channels = util::parseList(params[0]);
 
+
 			for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); ++it) {
 				data::ChannelPtr channel = getOrCreateChannel(*it);
+
+				if (!channel) {
+					sendNumericReply(user, "403", util::makeVector<std::string>(*it, "No such channel"));
+				}
 
 				if (channel->userJoin(user)) {
 					channel->sendMessage(user, Message(user->getNickname(), "Joined the channel"));
@@ -237,6 +246,18 @@ namespace internal {
 					mChannels.at(channelName)->topicMessage(user);
 				}
 
+			} catch (...) {
+				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
+			}
+		} else if (command == "WHO") {
+			if (!requiresParam(user, command, params, 1)) {
+				return true;
+			}
+
+			std::string &channelName = params[0];
+
+			try {
+				mChannels.at(channelName)->topicMessage(user, params[0]);
 			} catch (...) {
 				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
 			}

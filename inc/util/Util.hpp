@@ -67,5 +67,34 @@ namespace util {
 		return vec;
 	}
 
+	template<typename _Tp>
+	std::vector<_Tp> makeVector(_Tp a0, _Tp a1, _Tp a2, _Tp a3, _Tp a4, _Tp a5) {
+		std::vector<_Tp> vec;
+
+		vec.push_back(a0);
+		vec.push_back(a1);
+		vec.push_back(a2);
+		vec.push_back(a3);
+		vec.push_back(a4);
+		vec.push_back(a5);
+
+		return vec;
+	}
+
+	template<typename _Tp>
+	std::vector<_Tp> makeVector(_Tp a0, _Tp a1, _Tp a2, _Tp a3, _Tp a4, _Tp a5, _Tp a6) {
+		std::vector<_Tp> vec;
+
+		vec.push_back(a0);
+		vec.push_back(a1);
+		vec.push_back(a2);
+		vec.push_back(a3);
+		vec.push_back(a4);
+		vec.push_back(a5);
+		vec.push_back(a6);
+
+		return vec;
+	}
+
 	std::vector<std::string> parseList(std::string list);
 } // namespace util

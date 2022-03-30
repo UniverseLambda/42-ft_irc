@@ -70,6 +70,9 @@ namespace data {
 		bool userJoin(UserPtr user);
 		void userDisconnected(UserPtr user);
 
+		void whoMessage(UserPtr user, std::string name);
+		void namesMessage(UserPtr user);
+
 		bool isInChannel(UserPtr user) const;
 
 		bool sendMessage(UserPtr sender, internal::Message message);

@@ -241,6 +241,38 @@ namespace data {
 		}
 	}
 
+	// :irc.example.net 352 nick #test ~clsaad localhost irc.example.net nick H@ :0 realname
+	void Channel::whoMessage(UserPtr user, std::string name) {
+		for (user_storage::iterator uit = mUsers.begin(); uit != mUsers.end(); ++uit) {
+			mServer->sendNumericReply(user, "352", util::makeVector<std::string>(
+				mName,
+				uit->first->getUsername(),
+				uit->first->getHostname(),
+				mServer->getHost(),
+				uit->first->getNickname(),
+				std::string() + "H" + ((mMode & CMODE_PRIVATE) ? "*" : "") + (uit->second ? "@" : ""),
+				"0 " + uit->first->getRealname()
+				));
+		}
+
+		mServer->sendNumericReply(user, "315", util::makeVector<std::string>(name, "End of WHO list"));
+	}
+
+	void Channel::namesMessage(UserPtr user) {
+		for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+			mServer->sendMessage(it->first, user->getOrigin(), "JOIN", mName, true);
+
+			mServer->sendNumericReply(user, "353",
+				util::makeVector<std::string>(
+					(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" : "=",
+					mName,
+					(it->second ? "@" : "") + it->first->getNickname()
+			));
+		}
+
+		mServer->sendNumericReply(user, "366", "End of NAMES list");
+	}
+
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {
 		if (mUsers.count(sender) == 0) {
 			return false;
