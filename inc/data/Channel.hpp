@@ -22,7 +22,7 @@ namespace data {
 			CMODE_OPERATOR						= 0x001,	// o		SUPPORTED
 			CMODE_PRIVATE						= 0x002,	// p		TO REMOVE
 			CMODE_SECRET						= 0x004,	// s		TO REMOVE
-			CMODE_INVITE						= 0x008,	// i		TODO
+			CMODE_INVITE						= 0x008,	// i		SUPPORTED
 			CMODE_TOPIC_OP_ONLY					= 0x010,	// t		TODO
 			CMODE_BAN							= 0x020,	// b		SUPPORTED
 			CMODE_END							= (CMODE_BAN << 1)
@@ -37,6 +37,7 @@ namespace data {
 		internal::ServerPtr mServer;
 		user_storage mUsers;
 		std::set<std::string> mBanList;
+		std::set<std::string> mInviteList;
 		ChannelMode mMode;
 
 	public:

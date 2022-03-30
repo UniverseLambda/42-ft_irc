@@ -19,6 +19,8 @@ namespace data {
 		mName(orig.mName),
 		mServer(orig.mServer),
 		mUsers(orig.mUsers),
+		mBanList(orig.mBanList),
+		mInviteList(orig.mInviteList),
 		mMode(orig.mMode) {}
 
 	Channel::~Channel() {}
@@ -27,6 +29,8 @@ namespace data {
 		mName = orig.mName;
 		mServer = orig.mServer;
 		mUsers = orig.mUsers;
+		mBanList = orig.mBanList;
+		mInviteList = orig.mInviteList;
 		return *this;
 	}
 
@@ -49,10 +53,22 @@ namespace data {
 				return false;
 			}
 
+			if (mMode & CMODE_INVITE) {
+				std::set<std::string>::iterator res = mInviteList.find(user->getNickname());
+
+				if (res == mInviteList.end()) {
+					mServer->sendNumericReply(user, "473", util::makeVector<std::string>(mName, "Cannot join channel (+i)"));
+					return false;
+				}
+			}
 			// TODO: Check for invite
 
 			if (!mUsers.insert(std::make_pair(user, mUsers.empty())).second) {
 				return false;
+			}
+
+			if (mMode & CMODE_INVITE) {
+				mInviteList.erase(user->getNickname());
 			}
 
 			if (!user->channelJoined(this)) {
