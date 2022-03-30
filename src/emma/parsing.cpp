@@ -28,9 +28,10 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 		else if (i > start)
 			params.push_back(msg.substr(start, i - start));
 	}
-	std::cout << "CMD = " << cmd<< std::endl;
+	std::cout << "CMD = " << cmd << std::endl;
 	for (size_t j=0; j< params.size() ; j++){
 		std::cout << params[j] << std::endl;
 	}
 	server->admitMessage(fd, cmd, params);
+	params.clear();
 }
