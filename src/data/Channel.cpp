@@ -273,6 +273,33 @@ namespace data {
 		mServer->sendNumericReply(user, "366", "End of NAMES list");
 	}
 
+	void Channel::invite(UserPtr user, std::string nickname, UserPtr target) {
+		if (mUsers.count(user) == 0) {
+			mServer->sendNumericReply(user, "442", util::makeVector<std::string>(mName, "You're not on that channel"));
+			return;
+		}
+
+		if ((mMode & CMODE_INVITE) && !isOperator(user)) {
+			mServer->sendNumericReply(user, "482", util::makeVector<std::string>(mName, "You're not channel operator"));
+			return;
+		}
+
+		if (!target) {
+			mServer->sendNumericReply(user, "401", util::makeVector<std::string>(nickname, "No such nick/channel"));
+			return;
+		}
+
+		if (mUsers.count(target) != 0) {
+			mServer->sendNumericReply(user, "443", util::makeVector<std::string>(nickname, mName, "is already on channel"));
+			return;
+		}
+
+		mInviteList.insert(nickname);
+
+		mServer->sendMessage(user, user->getOrigin(), "INVITE", util::makeVector(nickname, mName));
+		mServer->sendNumericReply(user, "341", util::makeVector<std::string>(mName, nickname));
+	}
+
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {
 		if (mUsers.count(sender) == 0) {
 			return false;

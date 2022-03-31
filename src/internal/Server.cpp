@@ -92,7 +92,7 @@ namespace internal {
 	}
 
 	data::ChannelPtr Server::getOrCreateChannel(std::string name) {
-		if (name.empty() || (name[0] != '@' && name[0] != '&')) {
+		if (name.empty() || (name[0] != '#' && name[0] != '&')) {
 			return NULL;
 		}
 
@@ -258,6 +258,20 @@ namespace internal {
 
 			try {
 				mChannels.at(channelName)->topicMessage(user, params[0]);
+			} catch (...) {
+				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
+			}
+		} else if (command == "INVITE") {
+			if (!requiresParam(user, command, params, 2)) {
+				return true;
+			}
+
+			std::string &nickname = params[0];
+			std::string &channelName = params[1];
+			data::UserPtr target = getUser(nickname);
+
+			try {
+				getChannel(channelName)->invite(user, nickname, target);
 			} catch (...) {
 				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
 			}

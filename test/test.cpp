@@ -90,8 +90,6 @@ bool test_user() {
 		new_op test_assert_equal(user.getUsername().empty(), true);
 		new_op test_assert_equal(user.getRealname().empty(), true);
 		new_op test_assert_equal(user.isAuthenticated(), false);
-		new_op test_assert_equal(user.isOperator(), false);
-		new_op test_assert_equal(user.getMode(), data::User::UMODE_NONE);
 
 		// Testing setters
 		new_op user.setNickname("MDR0");
@@ -124,11 +122,6 @@ bool test_user() {
 		new_op test_assert_true(user.isAuthenticated());
 		new_op user.setAuthenticated(false);
 		new_op test_assert_equal(user.isAuthenticated(), false);
-
-		new_op user.setMode(data::User::UMODE_INVISIBLE | data::User::UMODE_OPERATOR, true);
-		new_op test_assert_equal(user.getMode(), data::User::UMODE_INVISIBLE | data::User::UMODE_OPERATOR);
-		new_op user.setMode(data::User::UMODE_INVISIBLE, false);
-		new_op test_assert_equal(user.getMode(), data::User::UMODE_OPERATOR);
 
 		new_op test_assert_equal(user.kickedFromChannel(NULL), false);
 		new_op test_assert_equal(user.kickedFromChannel(reinterpret_cast<data::ChannelPtr>(0xDEADBEAF)), false);
