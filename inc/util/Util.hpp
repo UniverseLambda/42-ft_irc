@@ -8,6 +8,12 @@
 
 namespace util {
 	template<typename _Tp>
+	_Tp *nonNull(_Tp *ptr) {
+		if (!ptr) throw std::runtime_error("ptr null");
+		return ptr;
+	}
+
+	template<typename _Tp>
 	std::vector<_Tp> makeVector() {
 		return std::vector<_Tp>();
 	}

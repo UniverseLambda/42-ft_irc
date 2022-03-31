@@ -273,7 +273,7 @@ namespace data {
 		mServer->sendNumericReply(user, "366", "End of NAMES list");
 	}
 
-	void Channel::invite(UserPtr user, std::string nickname, UserPtr target) {
+	void Channel::inviteMessage(UserPtr user, std::string nickname, UserPtr target) {
 		if (mUsers.count(user) == 0) {
 			mServer->sendNumericReply(user, "442", util::makeVector<std::string>(mName, "You're not on that channel"));
 			return;
@@ -298,6 +298,39 @@ namespace data {
 
 		mServer->sendMessage(user, user->getOrigin(), "INVITE", util::makeVector(nickname, mName));
 		mServer->sendNumericReply(user, "341", util::makeVector<std::string>(mName, nickname));
+	}
+
+	void Channel::kickMessage(UserPtr user, std::vector<std::string> targets, std::string &comment) {
+		if (mUsers.count(user) == 0) {
+			mServer->sendNumericReply(user, "442", util::makeVector<std::string>(mName, "You're not on that channel"));
+			return;
+		}
+
+		if (!isOperator(user)) {
+			mServer->sendNumericReply(user, "482", util::makeVector<std::string>(mName, "You're not channel operator"));
+			return;
+		}
+
+		for (std::size_t i = 0; i < targets.size(); ++i) {
+			std::string nickname = targets[i];
+			UserPtr curr = mServer->getUser(nickname);
+
+			if (!curr) {
+				mServer->sendNumericReply(user, "401", util::makeVector<std::string>(nickname, "No such nick/channel"));
+				continue;
+			}
+
+			if (mUsers.count(curr)) {
+				mServer->sendNumericReply(user, "441", util::makeVector<std::string>(nickname, mName, "They aren't on that channel"));
+				continue;
+			}
+
+			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+				mServer->sendMessage(it->first, curr->getOrigin(), "KICK", util::makeVector(mName, nickname, comment), true);
+			}
+
+			curr->kickedFromChannel(this);
+		}
 	}
 
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {

@@ -72,7 +72,8 @@ namespace data {
 
 		void whoMessage(UserPtr user, std::string name);
 		void namesMessage(UserPtr user);
-		void invite(UserPtr user, std::string nickname, UserPtr target);
+		void inviteMessage(UserPtr user, std::string nickname, UserPtr target);
+		void kickMessage(UserPtr user, std::vector<std::string> targets, std::string &comment);
 
 		bool isInChannel(UserPtr user) const;
 

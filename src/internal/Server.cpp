@@ -271,9 +271,37 @@ namespace internal {
 			data::UserPtr target = getUser(nickname);
 
 			try {
-				getChannel(channelName)->invite(user, nickname, target);
+				mChannels.at(channelName)->inviteMessage(user, nickname, target);
 			} catch (...) {
 				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
+			}
+		} else if (command == "KICK") {
+			if (!requiresParam(user, command, params, 2)) {
+				return true;
+			}
+
+			std::vector<std::string> channelNames = util::parseList(params[0]);
+			std::vector<std::string> nicknames = util::parseList(params[1]);
+			std::string comment = (params.size() >= 3) ? params[2] : "kicked";
+
+			if (channelNames.size() != 1 && channelNames.size() != nicknames.size()) {
+				return sendNumericReply(user, "461", util::makeVector<std::string>(command, "Not enough parameters"));
+			}
+
+			for (std::size_t i = 0; i < channelNames.size(); ++i) {
+				std::string channel = params[2];
+
+				try {
+					mChannels.at(channel)->kickMessage(
+						user,
+						(channelNames.size() > 1)
+							? std::vector<std::string>(nicknames.begin() + i, nicknames.begin() + i + 1)
+							: nicknames,
+						comment
+					);
+				} catch (...) {
+					return sendNumericReply(user, "403", util::makeVector<std::string>(channel, "No such channel"));
+				}
 			}
 		}
 
