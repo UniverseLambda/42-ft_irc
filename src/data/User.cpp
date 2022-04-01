@@ -103,7 +103,9 @@ namespace data {
 
 	bool User::sendMessage(internal::Message message) {
 		message.trySetChannel(mNickname);
-		return mServer->sendMessage(this, message.getOrigin(), "PRIVMSG", util::makeVector(message.getChannel(), message.getMessage()), true);
+		return mServer->sendMessage(this, message.getOrigin(),
+			(message.isNotice() ? "NOTICE" : "PRIVMSG"),
+			util::makeVector(message.getChannel(), message.getMessage()), true);
 	}
 
 	void User::dispatchDisconnect() {

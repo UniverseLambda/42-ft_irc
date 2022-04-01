@@ -303,6 +303,37 @@ namespace internal {
 					return sendNumericReply(user, "403", util::makeVector<std::string>(channel, "No such channel"));
 				}
 			}
+		} else if (command == "PRIVMSG" || command == "NOTICE") {
+			bool notice = (command == "NOTICE");
+
+			if (params.size() == 0) {
+				return notice || sendNumericReply(user, "411", "No recipient given (" + command + ")");
+			} else if (params.size() == 1 || params[1].empty()) {
+				return notice || sendNumericReply(user, "412", "No text to send");
+			}
+
+			std::string &target = params[0];
+			std::string &message = params[1];
+
+			if (target[0] == '#' || target[1] == '&') {
+				// Channel
+				data::ChannelPtr chan = getChannel(target);
+				if (!chan) {
+					return notice || sendNumericReply(user, "401", util::makeVector<std::string>(target, "No such nick/channel"));
+				}
+
+				// TODO: add notice
+				return chan->sendMessage(user, internal::Message(user->getOrigin(), message, notice));
+			} else {
+				// User
+				data::UserPtr tuser = getUser(target);
+
+				if (!tuser) {
+					return notice || sendNumericReply(user, "401", util::makeVector<std::string>(target, "No such nick/channel"));
+				}
+
+				return tuser->sendMessage(internal::Message(user->getOrigin(), message, notice));
+			}
 		}
 
 		return true;

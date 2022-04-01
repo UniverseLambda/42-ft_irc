@@ -335,6 +335,7 @@ namespace data {
 
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {
 		if (mUsers.count(sender) == 0) {
+			if (!message.isNotice()) mServer->sendNumericReply(sender, "404", util::makeVector<std::string>(mName, "Cannot send to channel"));
 			return false;
 		}
 

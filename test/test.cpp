@@ -202,7 +202,7 @@ bool test_channel() {
 		new_op test_assert_equal(receiver.hasMessage(-1), false);
 
 		new_op test_assert_equal(channel.sendMessage(otherUser, internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF")), false);
-		new_op test_assert_equal(channel.sendMessage(reinterpret_cast<data::UserPtr>(0xDEADBEEF), internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF")), false);
+		new_op test_assert_equal(channel.sendMessage(reinterpret_cast<data::UserPtr>(0xDEADBEEF), internal::Message(internal::Origin("AdMiN"), "MSG 2 OUF", true)), false);
 
 		new_op test_assert_equal(channel.userJoin(otherUser), true);
 
