@@ -22,6 +22,7 @@ struct	content{
 };
 
 void	msg_parser(std::string msg, int fd, internal::ServerPtr server);
+void	find_msg(std::map<int, content > *received_msg, int fd, char *msg, internal::ServerPtr server);
 
 
 #endif

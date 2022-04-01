@@ -1,4 +1,4 @@
-#include <emma/parsing.hpp>
+#include <emma/Parsing.hpp>
 #include <iostream>
 #include <vector>
 
@@ -28,10 +28,51 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 		else if (i > start)
 			params.push_back(msg.substr(start, i - start));
 	}
-	// std::cout << "CMD = " << cmd << std::endl;
-	// for (size_t j=0; j< params.size() ; j++){
-	// 	std::cout << j << ": " << params[j] << std::endl;
-	// }
 	server->admitMessage(fd, cmd, params);
 	params.clear();
+}
+
+void find_msg(int fd, char *msg, internal::ServerPtr server){
+	size_t								i = 0;
+	std::string							tmp(msg);
+	std::map<int, content >::iterator	it = received_msg->find(fd);
+	size_t								size = tmp.size();
+	size_t								start = 0;
+
+	while (i < size){
+		if ((tmp[i] == '\r' && tmp[i + 1] && tmp[i + 1] == '\n')
+			|| (tmp[i] == '\n' && it != received_msg.end() && it->second.r)){
+			if (it == received_msg.end()){
+				msg_parser(tmp.substr(start, i - start), fd, server);
+				if (tmp[i] && tmp[i] == '\r')
+					i++;
+				if (tmp[i] && tmp[i] == '\n')
+					i++;
+				start = i;
+				continue ;
+			}
+			it->second.buff += tmp.substr(start, i);
+			msg_parser(it->second.buff, fd, server);
+			received_msg.erase(fd);
+			it = received_msg.find(fd);
+			if (tmp[i] && tmp[i] == '\r')
+				i++;
+			if (tmp[i] && tmp[i] == '\n')
+				i++;
+			start = i;
+			continue ;
+		}
+		else
+			i++;
+	}
+	if (i > start && size > 0){
+		if (it == received_msg.end()){
+			received_msg.insert(std::make_pair(fd, content()));}
+		it = received_msg.find(fd);
+		it->second.buff += tmp.substr(start, size - start);
+		if (tmp[size - 1] == '\r')
+			it->second.r = true;
+		else
+			it->second.r = false;
+	}
 }
