@@ -215,7 +215,6 @@ namespace internal {
 
 			std::vector<std::string> channels = util::parseList(params[0]);
 
-
 			for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); ++it) {
 				data::ChannelPtr channel = getOrCreateChannel(*it);
 
@@ -334,6 +333,14 @@ namespace internal {
 
 				return tuser->sendMessage(internal::Message(user->getOrigin(), message, notice));
 			}
+		} else if (command == "PING") {
+			if (params.size() == 0) {
+				return sendNumericReply(user, "409", "No origin specified");
+			} else if (params.size() > 1 && params[1] != getHost()) {
+				return sendNumericReply(user, "408", util::makeVector<std::string>(params[1], "No such server"));
+			}
+
+			return sendMessage(user, Origin(getHost()), "PONG", util::makeVector(getHost(), params[0]), true);
 		}
 
 		return true;
@@ -418,26 +425,33 @@ namespace internal {
 	}
 
 	bool Server::handleLUsers(data::UserPtr user) const {
-		std::ostringstream os;
 
 		std::string luserClient;
 		std::string luserChannels;
 		std::string luserMe;
 
-		os << "There are " << mUsers.size() << " users and 0 invisible on 1 servers";
-		luserClient = os.str();
-		os.clear();
+		{
+			std::ostringstream os;
+
+			os << "There are " << mUsers.size() << " users and 0 invisible on 1 servers";
+			luserClient = os.str();
+		}
 
 		if (!mChannels.empty()) {
+			std::ostringstream os;
+
 			os << mChannels.size();
 			luserChannels = os.str();
+		}
+
+		{
+			std::ostringstream os;
+
+			os << "I have " << mUsers.size() << " clients and 1 servers";
+			luserClient = os.str();
 			os.clear();
 		}
 
-
-		os << "I have " << mUsers.size() << " clients and 1 servers";
-		luserClient = os.str();
-		os.clear();
 
 		return
 			sendNumericReply(user, "251", luserClient)

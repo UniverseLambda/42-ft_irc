@@ -63,7 +63,6 @@ namespace data {
 					return false;
 				}
 			}
-			// TODO: Check for invite
 
 			if (!mUsers.insert(std::make_pair(user, mUsers.empty())).second) {
 				return false;
@@ -77,8 +76,17 @@ namespace data {
 				return false;
 			}
 
+			mServer->sendMessage(user, user->getOrigin(), "JOIN", mName, true);
+			if (mTopic.empty()) {
+				mServer->sendNumericReply(user, "331", util::makeVector<std::string>(mName, "No topic is set"));
+			} else {
+				mServer->sendNumericReply(user, "332", util::makeVector(mName, mTopic));
+			}
+
 			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-				mServer->sendMessage(it->first, user->getOrigin(), "JOIN", mName, true);
+				if (it->first != user) {
+					mServer->sendMessage(it->first, user->getOrigin(), "JOIN", mName, true);
+				}
 
 				mServer->sendNumericReply(user, "353",
 					util::makeVector<std::string>(

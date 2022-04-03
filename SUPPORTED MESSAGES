@@ -15,7 +15,7 @@ KICK		UNTESTED
 PRIVMSG		UNTESTED
 NOTICE		UNTESTED
 
-PING/PONG
+PING/PONG	OK
 
 LUSERS ? (it has responses, but no description. WTF IS WRONG WITH YOU RFC 1459)
 CAP ? Dunno if it's important, seems to work by just ignoring it

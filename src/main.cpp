@@ -103,7 +103,7 @@ int	main(){
 	}
 	int addrlen = sizeof(address);
 	std::vector<pollfd> poll_fds;
-	poll_fds.push_back((pollfd){.fd = listen_fd, .events = POLLIN|POLLOUT});
+	poll_fds.push_back((pollfd){.fd = listen_fd, .events = POLLIN|POLLOUT, .revents = 0});
 	while (42){
 		// check for potential read/write/accept
 		ns = poll(poll_fds.data(), poll_fds.size(), 100);

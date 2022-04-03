@@ -5,9 +5,13 @@ namespace util {
 	std::vector<std::string> parseList(std::string list) {
 		std::vector<std::string> members;
 
-		for (std::size_t pos = 0; list.find(',') != std::string::npos;) {
+		for (std::size_t pos; (pos = list.find(',')) != std::string::npos;) {
 			members.push_back(list.substr(0, pos));
-			list.erase(0, pos + 1);
+			list = list.erase(0, pos + 1);
+		}
+
+		if (!list.empty()) {
+			members.push_back(list);
 		}
 
 		return members;
