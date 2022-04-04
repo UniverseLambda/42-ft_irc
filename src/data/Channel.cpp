@@ -96,7 +96,7 @@ namespace data {
 				));
 			}
 
-			return mServer->sendNumericReply(user, "366", "End of NAMES list");
+			return mServer->sendNumericReply(user, "366", util::makeVector<std::string>(mName, "End of NAMES list"));
 		} catch (...) {}
 		return false;
 	}

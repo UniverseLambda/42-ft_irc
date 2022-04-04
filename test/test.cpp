@@ -288,15 +288,117 @@ bool test_server() {
 	return true;
 }
 
+struct PackedMessage {
+	int fd;
+	util::Optional<internal::Origin> prefix;
+	std::string command;
+	std::vector<std::string> parameters;
+	bool lastParamExtended;
+
+	bool equivalent(int fd, internal::Origin origin, std::string command, std::vector<std::string> parameters = std::vector<std::string>()) {
+		return fd = this->fd && origin == *(this->prefix) && command == this->command && parameters == this->parameters;
+	}
+};
+
+struct RealReceiver: public api::IComm {
+	std::vector<PackedMessage> messages;
+
+	RealReceiver() {}
+
+	virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters, bool lastParamExtended) {
+		messages.push_back((PackedMessage){.fd = fd, .prefix = prefix, .command = command, .parameters = parameters, .lastParamExtended = lastParamExtended});
+		std::cout << ">> " << (prefix ? (":" + prefix->toString()) : "") << " " << command;
+
+		for (std::size_t i = 0; i < parameters.size(); ++i) {
+
+			std::cout << " ";
+			if (lastParamExtended && i + 1 == parameters.size()) {
+				std::cout << ":";
+			}
+
+			std::cout << parameters[i];
+		}
+
+		std::cout << std::endl;
+
+		return true;
+	}
+
+	PackedMessage &at(std::size_t index) {
+		return messages.at(messages.size() - 1 - index);
+	}
+
+	PackedMessage &operator[](std::size_t index) {
+		return messages[messages.size() - 1 - index];
+	}
+
+	std::size_t size() {
+		return messages.size();
+	}
+};
+
+bool test_realcase0() {
+	test_prelude
+
+	RealReceiver receiver = RealReceiver();
+	internal::Server server("POUPOU", &receiver);
+	data::UserPtr user;
+
+	new_op test_assert_not_equal(user = server.addUser(2), NULL);
+
+	new_op server.admitMessage(user->getFd(), "CAP", util::makeVector<std::string>("LS"));
+	new_op test_assert_equal(receiver.size(), 0);
+
+	new_op server.admitMessage(user->getFd(), "PASS", util::makeVector<std::string>("POUPOU"));
+	new_op test_assert_equal(receiver.size(), 0);
+
+	new_op server.admitMessage(user->getFd(), "NICK", util::makeVector<std::string>("nick"));
+	new_op test_assert_equal(receiver.size(), 0);
+
+	new_op server.admitMessage(user->getFd(), "USER", util::makeVector<std::string>("user", "clsaad", "localhost", "realname"));
+	new_op test_assert_equal(receiver.size(), 7);
+
+	new_op server.admitMessage(user->getFd(), "PING", util::makeVector<std::string>("LAG1647996256762"));
+	new_op test_assert_equal(receiver.size(), 8);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "PONG", util::makeVector<std::string>(server.getHost(), "LAG1647996256762")));
+
+	new_op server.admitMessage(user->getFd(), "PING", util::makeVector<std::string>("LAG1647996286831"));
+	new_op test_assert_equal(receiver.size(), 9);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "PONG", util::makeVector<std::string>(server.getHost(), "LAG1647996286831")));
+
+	new_op server.admitMessage(user->getFd(), "PING", util::makeVector<std::string>("LAG1647996316899"));
+	new_op test_assert_equal(receiver.size(), 10);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "PONG", util::makeVector<std::string>(server.getHost(), "LAG1647996316899")));
+
+	new_op server.admitMessage(user->getFd(), "PING", util::makeVector<std::string>("LAG1647996346970"));
+	new_op test_assert_equal(receiver.size(), 11);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "PONG", util::makeVector<std::string>(server.getHost(), "LAG1647996346970")));
+
+	new_op server.admitMessage(user->getFd(), "JOIN", util::makeVector<std::string>("#test"));
+	new_op test_assert_equal(receiver.size(), 15);
+	new_op test_assert_true(receiver.at(3).equivalent(user->getFd(), user->getOrigin(), "JOIN", util::makeVector<std::string>("#test")));
+	new_op test_assert_true(receiver.at(2).equivalent(user->getFd(), server.getHost(), "331", util::makeVector<std::string>(user->getNickname(), "#test", "No topic is set")));
+	new_op test_assert_true(receiver.at(1).equivalent(user->getFd(), server.getHost(), "353", util::makeVector<std::string>(user->getNickname(), "=", "#test", "@" + user->getNickname())));
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "366", util::makeVector<std::string>(user->getNickname(), "#test", "End of NAMES list")));
+
+	return true;
+}
+
 int main(int argc, char *argv[]) {
 	(void)argc;
 	(void)argv;
 
-	// std::signal(SIGSEGV, handle_sigs);
+#if !(__has_feature(address_sanitizer))
+	std::cout << "AddressSanitizer disabled, handling signal manually" << std::endl;
+	std::signal(SIGSEGV, handle_sigs);
+#else
+	std::cout << "AddressSanitizer enabled" << std::endl;
+#endif
 
 	EXEC_TEST(test_user)
 	EXEC_TEST(test_channel)
 	EXEC_TEST(test_server)
+	EXEC_TEST(test_realcase0)
 
 	return 0;
 }

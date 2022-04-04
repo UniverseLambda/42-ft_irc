@@ -52,10 +52,10 @@ distclean:	fclean
 
 re: distclean all
 
-
-test: FORCE $(OBJS) $(TEST_OBJS)
+compile_test: FORCE $(OBJS) $(TEST_OBJS)
 	$(LD) $(LD_FLAGS) -o $(OBJS_DIR)/test_exec $(OBJS) $(TEST_OBJS)
 
+test: compile_test
 	$(OBJS_DIR)/test_exec
 
 	$(RM) $(OBJS_DIR)/test_exec

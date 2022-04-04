@@ -55,7 +55,7 @@ namespace internal {
 		oss << mNickServer;
 
 		if (mUser) {
-			oss << "!" << mUser.unwrap();
+			oss << "!~" << mUser.unwrap();
 		}
 
 		if (mHost) {

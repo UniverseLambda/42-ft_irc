@@ -193,7 +193,7 @@ namespace internal {
 			}
 
 			user->setUsername(params[0]);
-			user->setHostname(params[1]);
+			user->setHostname(params[2]);
 			user->setRealname(params[3]);
 
 			return tryToAuthenticate(user);
@@ -404,7 +404,7 @@ namespace internal {
 		user->setAuthenticated(true);
 
 		// 001 RPL_WELCOME
-		sendNumericReply(user, "001", "Welcome to the Internet Relay Network " + user->getUsername() + "!" + user->getUsername() + "@" + user->getHostname());
+		sendNumericReply(user, "001", "Welcome to the Internet Relay Network " + user->getOrigin().toString());
 
 		// 002 RPL_YOURHOST
 		sendNumericReply(user, "002", "Your host is " + getHost() + ", running version irfun-1.0");
@@ -413,7 +413,7 @@ namespace internal {
 		sendNumericReply(user, "003", "This server was created Thu Mar 24 2022 12:37 (CET)");
 
 		// 004 RPL_MYINFO
-		sendNumericReply(user, "004", util::makeVector<std::string>(getHost(), "irfun-1.0", "iswo", "opstinmlbvk"));
+		sendNumericReply(user, "004", util::makeVector<std::string>(getHost(), "irfun-1.0", "+", "opstinmlbvk"));
 
 		// RPL_LUSER
 		handleLUsers(user);
@@ -448,7 +448,7 @@ namespace internal {
 			std::ostringstream os;
 
 			os << "I have " << mUsers.size() << " clients and 1 servers";
-			luserClient = os.str();
+			luserMe = os.str();
 			os.clear();
 		}
 
@@ -456,7 +456,7 @@ namespace internal {
 		return
 			sendNumericReply(user, "251", luserClient)
 			&& (luserChannels.empty() || sendNumericReply(user, "254", luserChannels))
-			&& sendNumericReply(user, "255", luserClient)
+			&& sendNumericReply(user, "255", luserMe)
 		;
 	}
 
