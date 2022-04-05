@@ -46,7 +46,7 @@ namespace data {
 	}
 
 	void User::setUsername(const std::string &username) {
-		mUsername = username;
+		mUsername = "~" + username;
 	}
 
 	void User::setRealname(const std::string &realname) {

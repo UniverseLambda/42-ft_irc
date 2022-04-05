@@ -226,6 +226,24 @@ namespace internal {
 					channel->sendMessage(user, Message(user->getNickname(), "Joined the channel"));
 				}
 			}
+		} else if (command == "PART") {
+			if (!requiresParam(user, command, params, 1)) {
+				return true;
+			}
+
+			std::vector<std::string> channels = util::parseList(params[0]);
+			std::string message = (params.size() > 1) ? params[1] : "Parting";
+
+			for (std::size_t i = 0; i < channels.size(); ++i) {
+				data::ChannelPtr channel = getChannel(channels[i]);
+
+				if (!channel) {
+					sendNumericReply(user, "403", util::makeVector<std::string>(channels[i], "No such channel"));
+					continue;
+				}
+
+				channel->partMessage(user, message);
+			}
 		} else if (command == "MODE") {
 			if (!requiresParam(user, command, params, 1))
 				return true;
@@ -256,7 +274,7 @@ namespace internal {
 			std::string &channelName = params[0];
 
 			try {
-				mChannels.at(channelName)->topicMessage(user, params[0]);
+				mChannels.at(channelName)->whoMessage(user, params[0]);
 			} catch (...) {
 				return sendNumericReply(user, "403", util::makeVector<std::string>(channelName, "No such channel"));
 			}
@@ -482,7 +500,7 @@ namespace internal {
 
 		// Simple mode request
 		if (params.size() == 1) {
-			return sendNumericReply(user, "324", "+" + target->getModeString());
+			return sendNumericReply(user, "324", util::makeVector<std::string>(target->getName(), "+" + target->getModeString()));
 		}
 
 		// Trying to set mode

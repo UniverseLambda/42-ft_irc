@@ -70,6 +70,7 @@ namespace data {
 		bool userJoin(UserPtr user);
 		void userDisconnected(UserPtr user);
 
+		void partMessage(UserPtr user, std::string name);
 		void whoMessage(UserPtr user, std::string name);
 		void namesMessage(UserPtr user);
 		void inviteMessage(UserPtr user, std::string nickname, UserPtr target);

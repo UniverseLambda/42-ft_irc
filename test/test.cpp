@@ -98,7 +98,7 @@ bool test_user() {
 
 		new_op user.setUsername("MDR1");
 		new_op test_assert_equal(user.getUsername().empty(), false);
-		new_op test_assert_equal(user.getUsername(), "MDR1");
+		new_op test_assert_equal(user.getUsername(), "~MDR1");
 
 		new_op user.setRealname("MDR2");
 		new_op test_assert_equal(user.getRealname().empty(), false);
@@ -110,7 +110,7 @@ bool test_user() {
 
 		new_op user.setUsername("LoL1");
 		new_op test_assert_equal(user.getUsername().empty(), false);
-		new_op test_assert_equal(user.getUsername(), "LoL1");
+		new_op test_assert_equal(user.getUsername(), "~LoL1");
 
 		new_op user.setRealname("LoL2");
 		new_op test_assert_equal(user.getRealname().empty(), false);
@@ -380,6 +380,33 @@ bool test_realcase0() {
 	new_op test_assert_true(receiver.at(2).equivalent(user->getFd(), server.getHost(), "331", util::makeVector<std::string>(user->getNickname(), "#test", "No topic is set")));
 	new_op test_assert_true(receiver.at(1).equivalent(user->getFd(), server.getHost(), "353", util::makeVector<std::string>(user->getNickname(), "=", "#test", "@" + user->getNickname())));
 	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "366", util::makeVector<std::string>(user->getNickname(), "#test", "End of NAMES list")));
+
+	new_op server.admitMessage(user->getFd(), "MODE", util::makeVector<std::string>("#test"));
+	new_op test_assert_equal(receiver.size(), 16);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "324", util::makeVector<std::string>(user->getNickname(), "#test", "+")));
+
+	new_op server.admitMessage(user->getFd(), "WHO", util::makeVector<std::string>("#test"));
+	new_op test_assert_equal(receiver.size(), 18);
+	new_op test_assert_true(receiver.at(1).equivalent(user->getFd(), server.getHost(), "352",
+		util::makeVector<std::string>(user->getNickname(), "#test", "~user", "localhost", server.getHost(), user->getNickname(), "H@", "0 " + user->getRealname())));
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "315", util::makeVector<std::string>(user->getNickname(), "#test", "End of WHO list")));
+
+	new_op server.admitMessage(user->getFd(), "PING", util::makeVector<std::string>("LAG1647996377045"));
+	new_op test_assert_equal(receiver.size(), 19);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "PONG", util::makeVector<std::string>(server.getHost(), "LAG1647996377045")));
+
+	new_op server.admitMessage(user->getFd(), "PRIVMSG", util::makeVector<std::string>("#test", "Saluuuut"));
+	new_op test_assert_equal(receiver.size(), 19);
+
+	new_op server.admitMessage(user->getFd(), "PING", util::makeVector<std::string>("LAG1647996407118"));
+	new_op test_assert_equal(receiver.size(), 20);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), server.getHost(), "PONG", util::makeVector<std::string>(server.getHost(), "LAG1647996407118")));
+
+	new_op server.admitMessage(user->getFd(), "PART", util::makeVector<std::string>("#test", "Leaving"));
+	new_op test_assert_equal(receiver.size(), 21);
+	new_op test_assert_true(receiver.at(0).equivalent(user->getFd(), user->getOrigin(), "PART", util::makeVector<std::string>("#test", "Leaving")));
+
+	new_op test_assert_equal(server.getChannel("#test"), NULL);
 
 	return true;
 }

@@ -105,6 +105,11 @@ namespace data {
 		try {
 			mUsers.erase(user);
 		} catch (...) {}
+
+		if (mUsers.empty()) {
+			mServer->channelReclaiming(mName);
+			delete this;
+		}
 	}
 
 	bool Channel::isInChannel(UserPtr user) const {
@@ -185,7 +190,9 @@ namespace data {
 		std::ostringstream os;
 
 		for (int i = 0x001; i != CMODE_END; i <<= 1) {
-			os << getModeChar(static_cast<ChannelMode>(i));
+			if (mMode & i) {
+				os << getModeChar(static_cast<ChannelMode>(i));
+			}
 		}
 
 		return os.str();
@@ -221,6 +228,25 @@ namespace data {
 
 	void Channel::setTopic(std::string &topic) {
 		mTopic = topic;
+	}
+
+	void Channel::partMessage(UserPtr user, std::string message) {
+		if (!isInChannel(user)) {
+			mServer->sendNumericReply(user, "441", util::makeVector<std::string>(user->getNickname(), mName, "They aren't on that channel"));
+			return;
+		}
+
+		// try {
+			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+				mServer->sendMessage(it->first, it->first->getOrigin(), "PART", util::makeVector(mName, message), true);
+			}
+		// } catch (...) {}
+		mUsers.erase(user);
+
+		if (mUsers.empty()) {
+			mServer->channelReclaiming(mName);
+			delete this;
+		}
 	}
 
 	void Channel::topicMessage(UserPtr user, util::Optional<std::string> topic) {
@@ -338,6 +364,11 @@ namespace data {
 			}
 
 			curr->kickedFromChannel(this);
+		}
+
+		if (mUsers.empty()) {
+			mServer->channelReclaiming(mName);
+			delete this;
 		}
 	}
 
