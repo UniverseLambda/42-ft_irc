@@ -24,7 +24,7 @@ namespace data {
 			CMODE_PRIVATE						= 0x002,	// p		TO REMOVE
 			CMODE_SECRET						= 0x004,	// s		TO REMOVE
 			CMODE_INVITE						= 0x008,	// i		SUPPORTED
-			CMODE_TOPIC_OP_ONLY					= 0x010,	// t		TODO
+			CMODE_TOPIC_OP_ONLY					= 0x010,	// t		SUPPORTED
 			CMODE_BAN							= 0x020,	// b		SUPPORTED
 			CMODE_END							= (CMODE_BAN << 1)
 		};
@@ -68,7 +68,7 @@ namespace data {
 		void topicMessage(UserPtr user, util::Optional<std::string> topic = util::Optional<std::string>());
 
 		bool userJoin(UserPtr user);
-		void userDisconnected(UserPtr user);
+		void userDisconnected(UserPtr user, std::string message);
 
 		void partMessage(UserPtr user, std::string name);
 		void whoMessage(UserPtr user, std::string name);
@@ -81,6 +81,8 @@ namespace data {
 		bool sendMessage(UserPtr sender, internal::Message message);
 
 		bool kickUser(UserPtr kicked);
+
+		void userWillRename(UserPtr user, std::string newNick);
 	};
 
 	Channel::ChannelMode operator|(Channel::ChannelMode cm0, Channel::ChannelMode cm1);

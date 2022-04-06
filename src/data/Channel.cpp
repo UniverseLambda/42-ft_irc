@@ -101,10 +101,15 @@ namespace data {
 		return false;
 	}
 
-	void Channel::userDisconnected(UserPtr user) {
+	void Channel::userDisconnected(UserPtr user, std::string message) {
 		try {
 			mUsers.erase(user);
 		} catch (...) {}
+
+		for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+			mServer->sendMessage(it->first, user->getOrigin(), "QUIT", message, true);
+		}
+
 
 		if (mUsers.empty()) {
 			mServer->channelReclaiming(mName);
@@ -121,6 +126,11 @@ namespace data {
 		std::vector<std::string> newBans;
 		Mode finalMode;
 
+		std::cout << "PARAMS1" << std::endl;
+		for (std::size_t i = 0; i < params.size(); ++i) {
+			std::cout << "- " << params[i] << std::endl;
+		}
+
 		for (std::size_t i = 0, p = 0; i < modes.size(); ++i) {
 			Mode mode = getMode(modes[i]);
 
@@ -128,7 +138,7 @@ namespace data {
 				mServer->sendNumericReply(sender, "472", util::makeVector<std::string>(modes.substr(i, 1), "is unknown mode char to me for " + mName));
 				return;
 			} else if (mode == CMODE_OPERATOR) {
-				if (p + 1 >= params.size()) {
+				if (p + 1 > params.size()) {
 					mServer->sendNumericReply(sender, "461", util::makeVector<std::string>("MODE", "Not enough parameters"));
 					return;
 				}
@@ -144,7 +154,7 @@ namespace data {
 
 				newOps.push_back(userPtr);
 			} else if (mode == CMODE_BAN) {
-				if (p + 1 >= params.size()) {
+				if (p + 1 > params.size()) {
 					mServer->sendNumericReply(sender, "461", util::makeVector<std::string>("MODE", "Not enough parameters"));
 					return;
 				}
@@ -155,10 +165,11 @@ namespace data {
 			}
 		}
 
+		mMode = finalMode;
+
 		for (std::vector<UserPtr>::iterator it = newOps.begin(); it != newOps.end(); ++it) {
 			mUsers[*it] = addMode;
 		}
-
 
 		for (std::vector<std::string>::iterator it = newBans.begin(); it != newBans.end(); ++it) {
 			if (addMode) {
@@ -168,8 +179,11 @@ namespace data {
 			}
 		}
 
+		std::vector<std::string> rpl_params = util::makeVector(mName, (addMode ? "+" : "-") + modes);
+		rpl_params.insert(rpl_params.end(), params.begin(), params.end());
+
 		for (std::map<UserPtr, bool>::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-			mServer->sendMessage(it->first, it->first->getOrigin(), "MODE", util::makeVector<std::string>(mName, (addMode ? "+" : "-") + modes));
+			mServer->sendMessage(it->first, it->first->getOrigin(), "MODE", rpl_params);
 		}
 	}
 
@@ -330,7 +344,7 @@ namespace data {
 
 		mInviteList.insert(nickname);
 
-		mServer->sendMessage(user, user->getOrigin(), "INVITE", util::makeVector(nickname, mName));
+		mServer->sendMessage(target, user->getOrigin(), "INVITE", util::makeVector(nickname, mName));
 		mServer->sendNumericReply(user, "341", util::makeVector<std::string>(mName, nickname));
 	}
 
@@ -354,15 +368,16 @@ namespace data {
 				continue;
 			}
 
-			if (mUsers.count(curr)) {
+			if (mUsers.count(curr) == 0) {
 				mServer->sendNumericReply(user, "441", util::makeVector<std::string>(nickname, mName, "They aren't on that channel"));
 				continue;
 			}
 
 			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-				mServer->sendMessage(it->first, curr->getOrigin(), "KICK", util::makeVector(mName, nickname, comment), true);
+				mServer->sendMessage(it->first, user->getOrigin(), "KICK", util::makeVector(mName, nickname, comment), true);
 			}
 
+			mUsers.erase(curr);
 			curr->kickedFromChannel(this);
 		}
 
@@ -391,6 +406,30 @@ namespace data {
 
 	bool Channel::kickUser(UserPtr kicked) {
 		return !!(mUsers.erase(kicked)) && kicked->kickedFromChannel(this);
+	}
+
+	void Channel::userWillRename(UserPtr user, std::string newNick) {
+		for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+			if (it->first == user) {
+				continue;
+			}
+
+			mServer->sendMessage(it->first, user->getOrigin(), "NICK", newNick);
+		}
+
+		// std::set<std::string>::iterator ban = mBanList.find(user->getNickname());
+
+		// if (ban != mBanList.end()) {
+		// 	mBanList.erase(ban);
+		// 	mBanList.insert(newNick);
+		// }
+
+		// std::set<std::string>::iterator invite = mInviteList.find(user->getNickname());
+
+		// if (invite != mInviteList.end()) {
+		// 	mInviteList.erase(invite);
+		// 	mInviteList.insert(newNick);
+		// }
 	}
 
 	Channel::ChannelMode operator|(Channel::ChannelMode cm0, Channel::ChannelMode cm1) {

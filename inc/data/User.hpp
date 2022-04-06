@@ -55,6 +55,7 @@ namespace data {
 
 		bool sendMessage(internal::Message message);
 
-		void dispatchDisconnect();
+		void dispatchDisconnect(std::string message);
+		void dispatchWillRename(std::string newNick);
 	};
 }

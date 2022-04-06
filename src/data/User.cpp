@@ -108,9 +108,19 @@ namespace data {
 			util::makeVector(message.getChannel(), message.getMessage()), true);
 	}
 
-	void User::dispatchDisconnect() {
+	void User::dispatchDisconnect(std::string message) {
 		for (std::set<ChannelPtr>::iterator it = mChannels.begin(); it != mChannels.end(); ++it) {
-			(*it)->userDisconnected(this);
+			(*it)->userDisconnected(this, message);
 		}
+	}
+
+	void User::dispatchWillRename(std::string newNick) {
+		for (std::set<ChannelPtr>::iterator it = mChannels.begin(); it != mChannels.end(); ++it) {
+			(*it)->userWillRename(this, newNick);
+		}
+
+		mServer->sendMessage(this, getOrigin(), "NICK", newNick);
+		mNickname = newNick;
+
 	}
 } // namespace data

@@ -7,16 +7,19 @@ msg_manager::msg_manager(){
 }
 
 bool	msg_manager::sendMessage(int fd){
-	size_t	sent = 0;
+	ssize_t	sent = 0;
 	std::map<int, struct content>::iterator	it = to_send.find(fd);
 
 	if (it == to_send.end())
 		return 0;
-	while ((sent = send(fd, it->second.buff.data(), it->second.buff.size(), 0)) != it->second.buff.size()){
+	sent = send(fd, it->second.buff.data(), it->second.buff.size(), 0);
+	if (sent != (ssize_t)it->second.buff.size()){
 		if (sent == 0 || sent == -1)
 			return 0;
 		it->second.buff = it->second.buff.substr(sent, it->second.buff.size() - sent);
 	}
+	else
+		to_send.erase(fd);
 	return 1;
 }
 
@@ -24,10 +27,8 @@ bool msg_manager::stockMessage(int fd, util::Optional<internal::Origin> prefix, 
 	std::string	res;
 	size_t		params_nb = parameters.size();
 
-	if (!(poll_fds[fd].revents & POLLOUT))
-		return 0;
 	if (prefix)
-		res += prefix->toString() + ' ';
+		res += ":" + prefix->toString() + ' ';
 	res += command + ' ';
 	for (size_t i = 0; i < params_nb ; i++){
 		if (lastParamExtended && i == (params_nb - 1))

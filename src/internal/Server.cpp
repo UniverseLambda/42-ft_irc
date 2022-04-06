@@ -129,15 +129,12 @@ namespace internal {
 	}
 
 	void Server::userDisconnected(data::UserPtr user, std::string message) {
-		user->dispatchDisconnect();
-		mUsers.erase(user->getFd());
+		user->dispatchDisconnect(message);
 
-		for (userStorage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-			// We don't care if we couldn't manage to send the message
-
-			sendMessage(it->second, user->getOrigin(), "QUIT", message, true);
+		if (!user->isAuthenticated()) {
+			return;
 		}
-
+		mUsers.erase(user->getFd());
 		delete user;
 	}
 
@@ -182,8 +179,13 @@ namespace internal {
 				}
 			}
 
-			user->setNickname(nick);
-			return tryToAuthenticate(user);
+
+			if (user->isAuthenticated()) {
+				user->dispatchWillRename(nick);
+			} else {
+				user->setNickname(nick);
+				return tryToAuthenticate(user);
+			}
 		} else if (command == "USER") {
 			if (!requiresParam(user, command, params, 4))
 				return true;
@@ -306,7 +308,7 @@ namespace internal {
 			}
 
 			for (std::size_t i = 0; i < channelNames.size(); ++i) {
-				std::string channel = params[2];
+				std::string channel = channelNames[i];
 
 				try {
 					mChannels.at(channel)->kickMessage(
@@ -520,6 +522,12 @@ namespace internal {
 		// If empty mode, then do nothing
 		if (modeParam.empty()) {
 			return true;
+		}
+
+
+		std::cout << "PARAMS0" << std::endl;
+		for (std::size_t i = 0; i < params.size(); ++i) {
+			std::cout << "- " << params[i] << std::endl;
 		}
 
 		target->admitMode(user, modeParam, addition, std::vector<std::string>(params.begin() + 2, params.end()));
