@@ -6,14 +6,14 @@ msg_manager::msg_manager(){
 	server = internal::Server("POUPOU", this);
 }
 
-bool	sendMessage(int fd){
-	int	sent = 0;
+bool	msg_manager::sendMessage(int fd){
+	size_t	sent = 0;
 	std::map<int, struct content>::iterator	it = to_send.find(fd);
 
 	if (it == to_send.end())
 		return 0;
-	while ((sent = send(fd, it->second.buff)) != it->second.buff.size()){
-		it->sencond.buff = it->sencond.buff.substr(sent, it->second.buff.size() - sent);
+	while ((sent = send(fd, it->second.buff.data(), it->second.buff.size(), 0)) != it->second.buff.size()){
+		it->second.buff = it->second.buff.substr(sent, it->second.buff.size() - sent);
 		if (sent == 0)
 			return 0;
 	}
@@ -99,7 +99,7 @@ void	msg_manager::connections_manager(){
 				memset(buffer, 0, 4097);
 				result = read(it->fd, buffer, 4096);
 				std::string str;
-				find_msg(&received_msg, it->fd, buffer, &server);
+				find_msg(*this, it->fd, buffer, &server);
 				if (result < 0)
 					std::cout << "couldn't read from socket\n";
 				else if (result == 0){

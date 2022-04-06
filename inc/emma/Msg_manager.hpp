@@ -16,22 +16,24 @@
 #include <sys/poll.h>
 #include <internal/Origin.hpp>
 #include <util/Util.hpp>
+#include <sys/socket.h>
 
 class	msg_manager: public api::IComm{
 	private :
 	int								listen_fd, new_socket;
 	sockaddr_in						address;
 	char							buffer[4097];
-	std::map<int, struct content>	received_msg;
 	std::map<int, struct content>	to_send;
 	std::vector<pollfd>				poll_fds;
 	int								addrlen;
 	internal::Server 				server;
 	public :
+	std::map<int, struct content>	received_msg;
 	msg_manager();
 	void	set_connection(char *arg);
 	void	connections_manager();
-	bool	sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters = std::vector<std::string>(), bool lastParamExtended = false);
+	bool	sendMessage(int fd);
+	bool	stockMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters, bool lastParamExtended);
 
 };
 

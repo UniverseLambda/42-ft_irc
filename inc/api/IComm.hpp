@@ -11,6 +11,6 @@ namespace api {
 	struct IComm {
 		FT_INTERFACE_PRELUDE(IComm);
 
-		virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters = std::vector<std::string>(), bool lastParamExtended = false) = 0;
+		virtual bool stockMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters = std::vector<std::string>(), bool lastParamExtended = false) = 0;
 	};
 } // namespace api

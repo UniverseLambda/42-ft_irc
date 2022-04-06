@@ -21,8 +21,10 @@ struct	content{
 	std::string	buff;
 };
 
+class msg_manager;
+
 void	msg_parser(std::string msg, int fd, internal::ServerPtr server);
-void	find_msg(std::map<int, content > *received_msg, int fd, char *msg, internal::ServerPtr server);
+void 	find_msg(msg_manager &MM, int fd, char *msg, internal::ServerPtr server);
 
 
 #endif
