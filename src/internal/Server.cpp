@@ -386,7 +386,7 @@ namespace internal {
 
 	bool Server::sendMessage(data::UserPtr user, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool lastParamExtended) const {
 		if (mCommInterface) {
-			return mCommInterface->sendMessage(user->getFd(), prefix, command, params, lastParamExtended);
+			return mCommInterface->stockMessage(user->getFd(), prefix, command, params, lastParamExtended);
 		}
 		std::cerr << "NO ICOMM SET" << std::endl;
 		std::cerr << "MESSAGE CONTENT: " << std::endl;

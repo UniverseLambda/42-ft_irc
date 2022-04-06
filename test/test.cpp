@@ -36,7 +36,7 @@ struct MessageReceiver: api::IComm {
 
 	std::map< int, std::vector<Message> > msgs;
 
-	virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool) {
+	virtual bool stockMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> params, bool) {
 		if (command != "PRIVMSG" && command != "NOTICE") {
 			return true;
 		}
@@ -305,7 +305,7 @@ struct RealReceiver: public api::IComm {
 
 	RealReceiver() {}
 
-	virtual bool sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters, bool lastParamExtended) {
+	virtual bool stockMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters, bool lastParamExtended) {
 		messages.push_back((PackedMessage){.fd = fd, .prefix = prefix, .command = command, .parameters = parameters, .lastParamExtended = lastParamExtended});
 		std::cout << ">> " << (prefix ? (":" + prefix->toString()) : "") << " " << command;
 
