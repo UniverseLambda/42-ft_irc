@@ -6,10 +6,23 @@ msg_manager::msg_manager(){
 	server = internal::Server("POUPOU", this);
 }
 
-bool msg_manager::sendMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters, bool lastParamExtended){
+bool	sendMessage(int fd){
+	int	sent = 0;
+	std::map<int, struct content>::iterator	it = to_send.find(fd);
+
+	if (it == to_send.end())
+		return 0;
+	while ((sent = send(fd, it->second.buff)) != it->second.buff.size()){
+		it->sencond.buff = it->sencond.buff.substr(sent, it->second.buff.size() - sent);
+		if (sent == 0)
+			return 0;
+	}
+	return 1;
+}
+
+bool msg_manager::stockMessage(int fd, util::Optional<internal::Origin> prefix, std::string command, std::vector<std::string> parameters, bool lastParamExtended){
 	std::string	res;
 	size_t		params_nb = parameters.size();
-	size_t		sent = 0;
 
 	if (!(poll_fds[fd].revents & POLLOUT))
 		return 0;
@@ -24,17 +37,15 @@ bool msg_manager::sendMessage(int fd, util::Optional<internal::Origin> prefix, s
 		else
 			res += parameters[i] + ' ';
 	}
-	while ((sent = write(fd, res, res.size())) != res.size()){
-		std::map<int, content >::iterator	it = to_send.find(fd);
-		if (it == to_send.end()){
-			to_send.insert(std::make_pair(fd, content()));
-			it = to_send.find(fd);
-		}
-		it->second.buff += res.substr(sent, res.size() - sent);
-		res = it->second.buff;
+	res += "\r\n";
+	std::map<int, content >::iterator	it = to_send.find(fd);
+	if (it == to_send.end()){
+		to_send.insert(std::make_pair(fd, content()));
+		it = to_send.find(fd);
 	}
+	it->second.buff += res.substr(0, res.size());
 	return 1;
-} 
+}
 
 void	msg_manager::set_connection(char *arg){
 
@@ -80,6 +91,9 @@ void	msg_manager::connections_manager(){
 		}
 		std::vector<pollfd>::iterator it = poll_fds.begin() + 1;
 		while (it != poll_fds.end()){
+			if (it->revents & POLLOUT){
+				sendMessage(it->fd);
+			}
 			if (it->revents & POLLIN){
 				int result = 1;
 				memset(buffer, 0, 4097);
