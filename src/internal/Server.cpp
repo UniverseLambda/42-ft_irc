@@ -92,7 +92,7 @@ namespace internal {
 	}
 
 	data::ChannelPtr Server::getOrCreateChannel(std::string name) {
-		if (name.empty() || (name[0] != '#' && name[0] != '&')) {
+		if (name.size() < 2 || (name[0] != '#' && name[0] != '&')) {
 			return NULL;
 		}
 
@@ -219,7 +219,7 @@ namespace internal {
 				data::ChannelPtr channel = getOrCreateChannel(*it);
 
 				if (!channel) {
-					sendNumericReply(user, "403", util::makeVector<std::string>(*it, "No such channel"));
+					return sendNumericReply(user, "403", util::makeVector<std::string>(*it, "No such channel"));
 				}
 
 				if (channel->userJoin(user)) {
@@ -323,7 +323,7 @@ namespace internal {
 		} else if (command == "PRIVMSG" || command == "NOTICE") {
 			bool notice = (command == "NOTICE");
 
-			if (params.size() == 0) {
+			if (params.size() == 0 || params[0].empty()) {
 				return notice || sendNumericReply(user, "411", "No recipient given (" + command + ")");
 			} else if (params.size() == 1 || params[1].empty()) {
 				return notice || sendNumericReply(user, "412", "No text to send");
