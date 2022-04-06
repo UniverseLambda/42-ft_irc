@@ -339,7 +339,6 @@ namespace internal {
 					return notice || sendNumericReply(user, "401", util::makeVector<std::string>(target, "No such nick/channel"));
 				}
 
-				// TODO: add notice
 				return chan->sendMessage(user, internal::Message(user->getOrigin(), message, notice));
 			} else {
 				// User
@@ -355,7 +354,7 @@ namespace internal {
 			if (params.size() == 0) {
 				return sendNumericReply(user, "409", "No origin specified");
 			} else if (params.size() > 1 && params[1] != getHost()) {
-				return sendNumericReply(user, "408", util::makeVector<std::string>(params[1], "No such server"));
+				return sendNumericReply(user, "402", util::makeVector<std::string>(params[1], "No such server"));
 			}
 
 			return sendMessage(user, Origin(getHost()), "PONG", util::makeVector(getHost(), params[0]), true);
