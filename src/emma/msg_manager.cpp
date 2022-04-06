@@ -13,9 +13,9 @@ bool	msg_manager::sendMessage(int fd){
 	if (it == to_send.end())
 		return 0;
 	while ((sent = send(fd, it->second.buff.data(), it->second.buff.size(), 0)) != it->second.buff.size()){
-		it->second.buff = it->second.buff.substr(sent, it->second.buff.size() - sent);
-		if (sent == 0)
+		if (sent == 0 || sent == -1)
 			return 0;
+		it->second.buff = it->second.buff.substr(sent, it->second.buff.size() - sent);
 	}
 	return 1;
 }
