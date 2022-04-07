@@ -14,7 +14,19 @@ include src/internal/Include.mk
 include src/data/Include.mk
 include src/util/Include.mk
 
-INCS :=
+INCS :=	inc/api/IComm.hpp \
+		inc/api/Interface.hpp \
+		inc/data/Channel.hpp \
+		inc/data/Forward.hpp \
+		inc/data/User.hpp \
+		inc/emma/Msg_manager.hpp \
+		inc/emma/Parsing.hpp \
+		inc/internal/Forward.hpp \
+		inc/internal/Message.hpp \
+		inc/internal/Origin.hpp \
+		inc/internal/Server.hpp \
+		inc/util/Optional.hpp \
+		inc/util/Util.hpp \
 
 SRCS_DIR := src
 OBJS_DIR := .objs

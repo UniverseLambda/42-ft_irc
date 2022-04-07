@@ -17,6 +17,7 @@ void	msg_parser(std::string msg, int fd, internal::ServerPtr server){
 			i++;
 		start = i;
 		if (i < len && msg[i] == ':' && cmd.size() > 0){
+			start += 1;
 			while (i < len)
 				i++;
 		}

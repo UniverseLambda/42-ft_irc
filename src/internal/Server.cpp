@@ -131,9 +131,6 @@ namespace internal {
 	void Server::userDisconnected(data::UserPtr user, std::string message) {
 		user->dispatchDisconnect(message);
 
-		if (!user->isAuthenticated()) {
-			return;
-		}
 		mUsers.erase(user->getFd());
 		delete user;
 	}
@@ -148,7 +145,7 @@ namespace internal {
 		}
 
 		if (command == "CAP") {
-			return false;
+			return sendNumericReply(user, "421", util::makeVector<std::string>(command, "Unknown command"));
 		}
 
 		if (command == "PASS") {
@@ -182,6 +179,7 @@ namespace internal {
 
 			if (user->isAuthenticated()) {
 				user->dispatchWillRename(nick);
+				return true;
 			} else {
 				user->setNickname(nick);
 				return tryToAuthenticate(user);
@@ -360,6 +358,8 @@ namespace internal {
 			}
 
 			return sendMessage(user, Origin(getHost()), "PONG", util::makeVector(getHost(), params[0]), true);
+		} else {
+			return sendNumericReply(user, "421", util::makeVector<std::string>(command, "Unknown command"));
 		}
 
 		return true;

@@ -159,7 +159,13 @@ namespace data {
 					return;
 				}
 
-				newBans.push_back(params[p++]);
+				if (params[p] == "*!*@*") {
+					newBans.push_back(sender->getUsername());
+				} else {
+					newBans.push_back(params[p]);
+				}
+				++p;
+
 			} else {
 				finalMode = finalMode | mode;
 			}
@@ -183,7 +189,7 @@ namespace data {
 		rpl_params.insert(rpl_params.end(), params.begin(), params.end());
 
 		for (std::map<UserPtr, bool>::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-			mServer->sendMessage(it->first, it->first->getOrigin(), "MODE", rpl_params);
+			mServer->sendMessage(it->first, sender->getOrigin(), "MODE", rpl_params);
 		}
 	}
 
@@ -256,6 +262,7 @@ namespace data {
 			}
 		// } catch (...) {}
 		mUsers.erase(user);
+		user->kickedFromChannel(this);
 
 		if (mUsers.empty()) {
 			mServer->channelReclaiming(mName);
