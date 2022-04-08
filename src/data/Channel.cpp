@@ -90,7 +90,7 @@ namespace data {
 
 				mServer->sendNumericReply(user, "353",
 					util::makeVector<std::string>(
-						(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" : "=",
+						/*(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" : */"=",
 						mName,
 						(it->second ? "@" : "") + it->first->getNickname()
 				));
@@ -221,8 +221,8 @@ namespace data {
 	char Channel::getModeChar(ChannelMode mode) {
 		switch (mode) {
 			case CMODE_OPERATOR:					return 'o';
-			case CMODE_PRIVATE:						return 'p';
-			case CMODE_SECRET:						return 's';
+			// case CMODE_PRIVATE:						return 'p';
+			// case CMODE_SECRET:						return 's';
 			case CMODE_INVITE:						return 'i';
 			case CMODE_TOPIC_OP_ONLY:				return 't';
 			case CMODE_BAN:							return 'b';
@@ -233,8 +233,8 @@ namespace data {
 	Channel::ChannelMode Channel::getMode(char c) {
 		switch (c) {
 			case 'o':			return CMODE_OPERATOR;
-			case 'p':			return CMODE_PRIVATE;
-			case 's':			return CMODE_SECRET;
+			// case 'p':			return CMODE_PRIVATE;
+			// case 's':			return CMODE_SECRET;
 			case 'i':			return CMODE_INVITE;
 			case 't':			return CMODE_TOPIC_OP_ONLY;
 			case 'b':			return CMODE_BAN;
@@ -305,7 +305,7 @@ namespace data {
 				uit->first->getHostname(),
 				mServer->getHost(),
 				uit->first->getNickname(),
-				std::string() + "H" + ((mMode & CMODE_PRIVATE) ? "*" : "") + (uit->second ? "@" : ""),
+				std::string() + "H" /*+ ((mMode & CMODE_PRIVATE) ? "*" : "")*/ + (uit->second ? "@" : ""),
 				"0 " + uit->first->getRealname()
 				));
 		}
@@ -319,7 +319,7 @@ namespace data {
 
 			mServer->sendNumericReply(user, "353",
 				util::makeVector<std::string>(
-					(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" : "=",
+					/*(mMode & CMODE_PRIVATE) ? "*" : (mMode & CMODE_SECRET) ? "@" :*/ "=",
 					mName,
 					(it->second ? "@" : "") + it->first->getNickname()
 			));
@@ -392,6 +392,23 @@ namespace data {
 			mServer->channelReclaiming(mName);
 			delete this;
 		}
+	}
+
+	void Channel::answerList(UserPtr user) const {
+		std::string userCount;
+
+		// if ((mMode & CMODE_PRIVATE) && mUsers.count(user) == 0) {
+			userCount = "Prv";
+		// } else {
+			std::stringstream ss;
+
+			ss << mUsers.size();
+			userCount = ss.str();
+		// }
+
+
+		// Channel name, User count/Prv (private), Topic (may be empty, but MUST be present)
+		mServer->sendNumericReply(user, "322", util::makeVector(mName, userCount, mTopic));
 	}
 
 	bool Channel::sendMessage(UserPtr sender, internal::Message message) {

@@ -67,7 +67,7 @@ void	msg_manager::set_connection(char *arg){
 		std::cout << "Error, failed to listen on socket\n";
 		exit(EXIT_FAILURE);
 	}
-	poll_fds.push_back((pollfd){.fd = listen_fd, .events = POLLIN|POLLOUT});
+	poll_fds.push_back((pollfd){.fd = listen_fd, .events = POLLIN|POLLOUT, .revents = 0x00});
 }
 
 void	msg_manager::connections_manager(){

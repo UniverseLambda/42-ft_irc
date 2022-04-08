@@ -21,12 +21,12 @@ namespace data {
 															// Flags	Status
 			CMODE_NONE							= 0x000,
 			CMODE_OPERATOR						= 0x001,	// o		SUPPORTED
-			CMODE_PRIVATE						= 0x002,	// p		TO REMOVE
-			CMODE_SECRET						= 0x004,	// s		TO REMOVE
-			CMODE_INVITE						= 0x008,	// i		SUPPORTED
-			CMODE_TOPIC_OP_ONLY					= 0x010,	// t		SUPPORTED
-			CMODE_BAN							= 0x020,	// b		SUPPORTED
+			CMODE_INVITE						= 0x002,	// i		SUPPORTED
+			CMODE_TOPIC_OP_ONLY					= 0x004,	// t		SUPPORTED
+			CMODE_BAN							= 0x008,	// b		SUPPORTED
 			CMODE_END							= (CMODE_BAN << 1)
+			// CMODE_PRIVATE					= 0x002,	// p		TO REMOVE
+			// CMODE_SECRET						= 0x004,	// s		TO REMOVE
 		};
 
 		typedef ChannelMode Mode;
@@ -75,6 +75,7 @@ namespace data {
 		void namesMessage(UserPtr user);
 		void inviteMessage(UserPtr user, std::string nickname, UserPtr target);
 		void kickMessage(UserPtr user, std::vector<std::string> targets, std::string &comment);
+		void answerList(UserPtr user) const;
 
 		bool isInChannel(UserPtr user) const;
 

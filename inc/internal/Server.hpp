@@ -15,11 +15,12 @@ namespace internal {
 	class Server {
 	private:
 		typedef std::map<int, data::UserPtr> userStorage;
+		typedef std::map<std::string, data::ChannelPtr> channelStorage;
 
 		std::string mPassword;
 		api::IComm *mCommInterface;
 		userStorage mUsers;
-		std::map<std::string, data::ChannelPtr> mChannels;
+		channelStorage mChannels;
 
 	public:
 		Server();

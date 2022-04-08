@@ -222,9 +222,7 @@ namespace internal {
 					return sendNumericReply(user, "403", util::makeVector<std::string>(*it, "No such channel"));
 				}
 
-				if (channel->userJoin(user)) {
-					channel->sendMessage(user, Message(user->getNickname(), "Joined the channel"));
-				}
+				channel->userJoin(user);
 			}
 		} else if (command == "PART") {
 			if (!requiresParam(user, command, params, 1)) {
@@ -358,6 +356,28 @@ namespace internal {
 			}
 
 			return sendMessage(user, Origin(getHost()), "PONG", util::makeVector(getHost(), params[0]), true);
+		} else if (command == "LIST") {
+			if (params.size() >= 2 && params[1] != getHost()) {
+				return sendNumericReply(user, "402", util::makeVector<std::string>(params[1], "No such server"));
+			}
+
+			if (params.size() >= 1) {
+				std::vector<std::string> channelNames = util::parseList(params[0]);
+
+				for (std::size_t i = 0; i < channelNames.size(); ++i) {
+					data::ChannelPtr chan = getChannel(channelNames[i]);
+
+					if (!chan)
+						continue;
+					chan->answerList(user);
+				}
+			} else {
+				for (channelStorage::iterator it = mChannels.begin(); it != mChannels.end(); ++it) {
+					it->second->answerList(user);
+				}
+			}
+
+			return sendNumericReply(user, "323", "End of LIST");
 		} else {
 			return sendNumericReply(user, "421", util::makeVector<std::string>(command, "Unknown command"));
 		}
@@ -432,7 +452,7 @@ namespace internal {
 		sendNumericReply(user, "003", "This server was created Thu Mar 24 2022 12:37 (CET)");
 
 		// 004 RPL_MYINFO
-		sendNumericReply(user, "004", util::makeVector<std::string>(getHost(), "irfun-1.0", "+", "opstinmlbvk"));
+		sendNumericReply(user, "004", util::makeVector<std::string>(getHost(), "irfun-1.0", "*", "otib"));
 
 		// RPL_LUSER
 		handleLUsers(user);
@@ -444,7 +464,6 @@ namespace internal {
 	}
 
 	bool Server::handleLUsers(data::UserPtr user) const {
-
 		std::string luserClient;
 		std::string luserChannels;
 		std::string luserMe;
@@ -524,12 +543,6 @@ namespace internal {
 			return true;
 		}
 
-
-		std::cout << "PARAMS0" << std::endl;
-		for (std::size_t i = 0; i < params.size(); ++i) {
-			std::cout << "- " << params[i] << std::endl;
-		}
-
 		target->admitMode(user, modeParam, addition, std::vector<std::string>(params.begin() + 2, params.end()));
 		return true;
 	}
@@ -544,7 +557,7 @@ namespace internal {
 		for (std::size_t i = 1; i < nick.length(); ++i) {
 			char c = nick[i];
 			if (!std::isalnum(c)
-				&& c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&  c != '^' && c != '{' && c != '}')
+				&& c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&  c != '^' && c != '{' && c != '}' && c != '_')
 				return false;
 		}
 
