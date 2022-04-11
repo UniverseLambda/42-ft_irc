@@ -9,7 +9,7 @@ TEST_SRCS := test/test.cpp
 SRCS =
 
 include src/api/Include.mk
-include src/emma/Include.mk
+include src/network/Include.mk
 include src/internal/Include.mk
 include src/data/Include.mk
 include src/util/Include.mk
@@ -19,8 +19,8 @@ INCS :=	inc/api/IComm.hpp \
 	inc/data/Channel.hpp \
 	inc/data/Forward.hpp \
 	inc/data/User.hpp \
-	inc/emma/Msg_manager.hpp \
-	inc/emma/Parsing.hpp \
+	inc/network/Msg_manager.hpp \
+	inc/network/Parsing.hpp \
 	inc/internal/Forward.hpp \
 	inc/internal/Message.hpp \
 	inc/internal/Origin.hpp \
@@ -36,8 +36,8 @@ LD := $(CXX)
 RM := rm
 MKDIR := mkdir
 
-CXX_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -Iinc -fsanitize=address #-fsanitize=undefined
-LD_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -fsanitize=address #-fsanitize=undefined
+CXX_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 -Iinc #-fsanitize=address #-fsanitize=undefined
+LD_FLAGS := -g3 -Wall -Wextra -Werror -std=c++98 #-fsanitize=address #-fsanitize=undefined
 
 OBJS :=	$(addprefix $(OBJS_DIR)/, $(SRCS:.cpp=.o))
 

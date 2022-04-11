@@ -1,7 +1,7 @@
 #ifndef MSG_MANAGER_HPP
 # define MSG_MANAGER_HPP
 
-#include <emma/Parsing.hpp>
+#include <network/Parsing.hpp>
 #include <internal/Server.hpp>
 #include <cstdlib>
 #include <netinet/in.h>
@@ -29,7 +29,7 @@ class	msg_manager: public api::IComm{
 	internal::Server 				server;
 	public :
 	std::map<int, struct content>	received_msg;
-	msg_manager();
+	msg_manager(char *mdp);
 	void	set_connection(char *arg);
 	void	connections_manager();
 	bool	sendMessage(int fd);

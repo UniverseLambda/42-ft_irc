@@ -425,6 +425,16 @@ namespace data {
 			}
 		}
 
+		if (message.getMessage() == "!blague") {
+			std::string &joke = mServer->nextJoke();
+
+			internal::Message jokeMessage(internal::Origin("joke_bot"), joke, mName, true);
+
+			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
+				it->first->sendMessage(jokeMessage);
+			}
+		}
+
 		return true;
 	}
 

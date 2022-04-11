@@ -1,14 +1,14 @@
-#include <emma/Parsing.hpp>
-#include <emma/Msg_manager.hpp>
+#include <network/Parsing.hpp>
+#include <network/Msg_manager.hpp>
 
 
 int	main(int argc, char **argv){
-	msg_manager		manager;
-
-	if (argc != 2){
-		std::cout << "Error : wrong argument(s)\n";
+	if (argc != 3){
+		std::cerr << "Error : wrong argument(s)\n";
 		exit(EXIT_FAILURE);
 	}
+
+	msg_manager		manager(argv[2]);
 	manager.set_connection(argv[1]);
 	manager.connections_manager();
 	return 0;

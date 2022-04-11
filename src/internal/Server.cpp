@@ -13,13 +13,21 @@
 namespace internal {
 	Server::Server() {}
 
-	Server::Server(std::string password, api::IComm *comm): mPassword(password), mCommInterface(comm) {}
+	Server::Server(std::string password, api::IComm *comm): mPassword(password), mCommInterface(comm), mJokeCounter(0), mJokes() {
+		mJokes.push_back("Quelle princesse a les levres gercees ? Labello bois dormant");
+		mJokes.push_back("Que dit un rappeur quand il rentre dans une fromagerie ? Faites du brie");
+		mJokes.push_back("Quelle maladie peuvent attraper les chats ? La minou-nucleose");
+		mJokes.push_back("Quel poisson n'a pas de date d'anniversaire ? Le poisson pane");
+		mJokes.push_back("Quel legume pousse sous l'eau ? Le chou-marin");
+	}
 
 	Server::Server(const Server &orig):
 		mPassword(orig.mPassword),
 		mCommInterface(orig.mCommInterface),
 		mUsers(orig.mUsers),
-		mChannels(orig.mChannels) {}
+		mChannels(orig.mChannels),
+		mJokeCounter(orig.mJokeCounter),
+		mJokes(orig.mJokes) {}
 
 	Server::~Server() {
 		for (std::map<int, data::UserPtr>::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
@@ -36,6 +44,8 @@ namespace internal {
 		mCommInterface = orig.mCommInterface;
 		mUsers = orig.mUsers;
 		mChannels = orig.mChannels;
+		mJokeCounter = orig.mJokeCounter;
+		mJokes = orig.mJokes;
 		return *this;
 	}
 
@@ -425,6 +435,14 @@ namespace internal {
 
 		std::cerr << std::endl;
 		return false;
+	}
+
+	std::string &Server::nextJoke() {
+		std::string &joke = mJokes[mJokeCounter];
+
+		mJokeCounter = (mJokeCounter + 1) % mJokes.size();
+
+		return joke;
 	}
 
 	bool Server::tryToAuthenticate(data::UserPtr user) {

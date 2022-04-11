@@ -1,5 +1,5 @@
-#include <emma/Parsing.hpp>
-#include <emma/Msg_manager.hpp>
+#include <network/Parsing.hpp>
+#include <network/Msg_manager.hpp>
 #include <iostream>
 #include <vector>
 

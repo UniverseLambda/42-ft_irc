@@ -1,9 +1,9 @@
-#include <emma/Msg_manager.hpp>
+#include <network/Msg_manager.hpp>
 
-msg_manager::msg_manager(){
+msg_manager::msg_manager(char *mdp){
 	listen_fd = 0;
 	new_socket = 0;
-	server = internal::Server("POUPOU", this);
+	server = internal::Server(mdp, this);
 }
 
 bool	msg_manager::sendMessage(int fd){
