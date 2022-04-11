@@ -258,7 +258,7 @@ namespace data {
 
 		// try {
 			for (user_storage::iterator it = mUsers.begin(); it != mUsers.end(); ++it) {
-				mServer->sendMessage(it->first, it->first->getOrigin(), "PART", util::makeVector(mName, message), true);
+				mServer->sendMessage(it->first, user->getOrigin(), "PART", util::makeVector(mName, message), true);
 			}
 		// } catch (...) {}
 		mUsers.erase(user);
